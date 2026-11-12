@@ -37,3 +37,11 @@
 .erhk-card table{width:100%;border-collapse:collapse;font-size:12px}
 .erhk-card td,.erhk-card th{padding:5px 6px;border-bottom:1px solid #f1f5f9;text-align:left}
 .erhk-x{float:right;background:none!important;color:#64748b!important;font-size:18px!important;padding:0 4px!important}
+
+/* --- Perbaikan galeri foto campuran potret/lanskap (cetak/PDF) ---
+   Aturan cetak v17 memaksa tinggi foto hingga ±260 mm sehingga foto potret meluber keluar kotak dan menimpa baris di bawahnya.
+   Di sini foto dikunci ke tinggi kotak yang dipilih pengguna dan diletakkan di tengah. */
+.gal .gb[style*="height"]{display:flex!important;align-items:center;justify-content:center;overflow:hidden;max-height:none!important}
+.gal .gb[style*="height"] img{max-height:100%!important;max-width:100%!important;width:auto;object-fit:contain}
+#erhkBar select{max-width:230px;font-size:12px;padding:3px 5px;border-radius:6px;border:0}
+.erhk-card .row input[type=text]{flex:1;min-width:180px}

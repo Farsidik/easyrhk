@@ -7,7 +7,7 @@
   var SCOPE = 'https://www.googleapis.com/auth/drive.file';
   var DRIVE = 'https://www.googleapis.com/drive/v3', UPLOAD = 'https://www.googleapis.com/upload/drive/v3';
   var E = { session: null, settings: {}, tokenClient: null, gtoken: null, gexp: 0, driveOn: false, local: false,
-            busy: false, dirty: false, timer: null, imgMap: {}, imgCache: {} };
+            busy: false, dirty: false, timer: null, imgMap: {}, imgCache: {}, dests: [], destFoto: {} };
   window.EasyRHK = E;
 
   /* ---------- util ---------- */
@@ -86,6 +86,10 @@
     return driveFetch(DRIVE + '/files/' + encodeURIComponent(id) + '?fields=id,trashed,mimeType').then(function (r) { return r.json(); })
       .then(function (f) { return !f.trashed && f.mimeType === 'application/vnd.google-apps.folder'; }, function () { return false; });
   }
+  function folderInfo(id) {
+    return driveFetch(DRIVE + '/files/' + encodeURIComponent(id) + '?fields=id,name,trashed,mimeType').then(function (r) { return r.json(); })
+      .then(function (f) { return (!f.trashed && f.mimeType === 'application/vnd.google-apps.folder') ? f : null; }, function () { return null; });
+  }
   function makeFolder(name, parent) {
     var q = "mimeType='application/vnd.google-apps.folder' and trashed=false and name='" + qEsc(name) + "'" + (parent ? " and '" + qEsc(parent) + "' in parents" : '');
     return driveFetch(DRIVE + '/files?fields=files(id,name)&q=' + encodeURIComponent(q)).then(function (r) { return r.json(); }).then(function (j) {
@@ -97,7 +101,7 @@
   }
   var TPL_NAME = { waliAsuh: 'Laporan Wali Asuh', waliAsrama: 'Laporan Wali Asrama' };
   /** Pastikan folder ada (pulihkan otomatis bila terhapus/dipindah ke sampah). Mengembalikan {root, foto, tpl}. */
-  function ensureFolders(role) {
+  function ensureFolders(role, destId) {
     var f = (E.settings.folders = E.settings.folders || {}), changed = false;
     function ensure(key, name, parentKey) {
       return Promise.resolve(f[key] && f[key].id ? folderOk(f[key].id) : false).then(function (ok) {
@@ -108,7 +112,18 @@
     return ensure('root', 'EasyRHK').then(function () { return ensure('foto', 'Foto', 'root'); })
       .then(function () { return ensure(role, TPL_NAME[role] || role, 'root'); })
       .then(function () { return changed ? api('saveSettings', { settings: { folders: f } }).then(function (r) { E.settings = r.settings; }) : null; })
-      .then(function () { return { root: f.root.id, foto: f.foto.id, tpl: f[role].id }; });
+      .then(function () {
+        var base = { root: f.root.id, foto: f.foto.id, tpl: f[role].id };
+        if (!destId) return base;
+        return folderOk(destId).then(function (ok) {
+          if (!ok) { status('Folder tujuan tidak bisa diakses — memakai folder otomatis', 'warn'); return base; }
+          var cached = E.destFoto[destId];
+          return (cached ? folderOk(cached) : Promise.resolve(false)).then(function (cok) {
+            if (cok) return { root: base.root, foto: cached, tpl: destId };
+            return makeFolder('Foto', destId).then(function (fid) { E.destFoto[destId] = fid; return { root: base.root, foto: fid, tpl: destId }; });
+          });
+        });
+      });
   }
   function multipart(opts) {
     var b = 'erhk' + Date.now() + Math.random().toString(36).slice(2), meta = opts.id ? { name: opts.name } : { name: opts.name, parents: [opts.parent] };
@@ -169,7 +184,8 @@
     if (E.busy) { E.dirty = true; return Promise.resolve(); }
     clearTimeout(E.timer); E.busy = true; E.dirty = false; status('Menyimpan ke Drive…', '');
     var role = S.role === 'waliAsrama' ? 'waliAsrama' : 'waliAsuh', period = periodOf(), erhk = (S.erhk = S.erhk || {});
-    return getToken(false).then(function () { return ensureFolders(role); })
+    return getToken(false).then(function () { return ensureFolders(role, erhk.dest); })
+      .then(function (fo) { return moveIfNeeded(erhk, fo.tpl).then(function () { return fo; }); })
       .then(function (fo) {
         return externalize(S, fo.foto).then(function (clone) {
           var title = erhk.title || titleOf(period); clone.erhk = { reportId: erhk.reportId || '', title: title };
@@ -177,7 +193,7 @@
           return multipart({ id: erhk.fileId || null, name: title.replace(/[\\/:*?"<>|]/g, '-') + '.json', parent: fo.tpl, mime: 'application/json', body: body })
             .catch(function (e) { if (e.status === 404 && erhk.fileId) { erhk.fileId = null; return multipart({ name: title.replace(/[\\/:*?"<>|]/g, '-') + '.json', parent: fo.tpl, mime: 'application/json', body: body }); } throw e; })
             .then(function (fileId) {
-              erhk.fileId = fileId;
+              erhk.fileId = fileId; erhk.parentId = fo.tpl;
               var pay = { title: title, period: period, rhk: S.rhk || '', role: role, driveFileId: fileId, reportId: erhk.reportId || undefined };
               return api('upsertReport', pay).catch(function (e) { if (e.code === 'NOT_FOUND') { delete pay.reportId; return api('upsertReport', pay); } throw e; });
             });
@@ -189,6 +205,16 @@
         else status('Gagal sinkron: ' + ((e && e.message) || 'kesalahan') + ' — data aman di browser', 'err');
       })
       .then(function () { E.busy = false; if (E.dirty) { clearTimeout(E.timer); E.timer = setTimeout(syncNow, 1500); } });
+  }
+  /* bila folder tujuan laporan diganti, pindahkan berkas yang sudah ada; bila gagal, buat salinan baru di folder tujuan */
+  function moveIfNeeded(erhk, target) {
+    if (!erhk.fileId || erhk.parentId === target) return Promise.resolve();
+    return driveFetch(DRIVE + '/files/' + encodeURIComponent(erhk.fileId) + '?fields=parents').then(function (r) { return r.json(); }).then(function (m) {
+      var cur = (m.parents || [])[0];
+      if (cur === target) { erhk.parentId = target; return; }
+      return driveFetch(DRIVE + '/files/' + encodeURIComponent(erhk.fileId) + '?addParents=' + encodeURIComponent(target) + (cur ? '&removeParents=' + encodeURIComponent(cur) : '') + '&fields=id', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: '{}' })
+        .then(function () { erhk.parentId = target; });
+    }).catch(function () { erhk.fileId = null; erhk.parentId = null; });
   }
   function connectDrive() { return getToken(true).then(function () { status('Drive terhubung ✓', 'ok'); return syncNow(); }, function (e) { alert(e.message); }); }
 
@@ -270,6 +296,7 @@
   function afterLogin(fresh) {
     var uid = E.session.user.userId, userKey = 'rhk_template_u_' + uid;
     try { E.imgMap = JSON.parse(lsGet(uk('imgmap')) || '{}'); } catch (e) { E.imgMap = {}; }
+    loadDests();
     var legacy = lsGet('rhk_template_v1');
     if (!lsGet(userKey) && legacy && confirm('Ditemukan data template v17 lama di browser ini. Impor ke akun Anda sekarang?\n(Pilih Batal untuk memulai laporan kosong.)')) lsSet(userKey, legacy);
     KEY = userKey; load(); initRhkSel(); render(); $('fTempat').value = S.ttd.tempat;
@@ -291,13 +318,16 @@
       bar.appendChild(h('button', { onclick: openReports }, '📚 Laporan saya'));
       bar.appendChild(h('button', { onclick: newReport }, '➕ Laporan baru'));
       bar.appendChild(h('button', { onclick: openFolders }, '📁 Folder Drive'));
+      bar.appendChild(h('label', { style: 'display:flex;gap:4px;align-items:center' }, 'Simpan ke:', h('select', { id: 'erhkDest', onchange: destChange })));
+      bar.appendChild(h('button', { onclick: uploadWord }, '📤 Word → Drive'));
+      bar.appendChild(h('button', { onclick: uploadFile }, '📤 Unggah PDF'));
       bar.appendChild(h('span', { id: 'erhkSt' }, ''));
       bar.appendChild(h('span', { class: 'sp' }));
       if (E.session.user.isAdmin) bar.appendChild(h('button', { onclick: openAdmin }, '🛡 Admin'));
       bar.appendChild(h('button', { onclick: openAccount }, '👤 Akun'));
       bar.appendChild(h('button', { onclick: logout }, 'Keluar'));
     } else { bar.appendChild(h('span', { id: 'erhkSt' }, 'Mode lokal')); }
-    var top = $e('top'); top.insertBefore(bar, top.firstChild);
+    var top = $e('top'); top.insertBefore(bar, top.firstChild); syncDestSel();
   }
   function logout() {
     var go = function () { E.session = null; lsDel('easyrhk_session'); location.reload(); };
@@ -358,9 +388,10 @@
   function openFolders() {
     var m = msgBox(), body = h('div', {});
     var mod = modal([h('button', { class: 'erhk-x', onclick: function () { mod.remove(); } }, '×'), h('h2', {}, 'Folder Google Drive'),
-      h('p', { class: 's' }, 'Aplikasi hanya dapat melihat folder/berkas yang ia buat sendiri (izin "drive.file"), bukan seluruh Drive Anda. Setiap template punya folder laporan sendiri; foto disimpan di folder "Foto".'), body, m], true);
+      h('p', { class: 's' }, 'Aplikasi hanya dapat melihat folder/berkas yang ia buat sendiri atau yang Anda pilih lewat aplikasi (izin "drive.file"), bukan seluruh Drive Anda.'), body, m], true);
     function draw() {
       body.innerHTML = ''; var f = (E.settings.folders = E.settings.folders || {});
+      body.appendChild(destSection(m, draw)); body.appendChild(h('h3', {}, 'Folder otomatis EasyRHK'));
       [['root', 'Folder utama'], ['foto', 'Foto'], ['waliAsuh', 'Template Wali Asuh'], ['waliAsrama', 'Template Wali Asrama']].forEach(function (x) {
         var cur = f[x[0]];
         body.appendChild(h('div', { class: 'erhk-item' }, h('div', { class: 't' }, h('b', {}, x[1]), h('small', {}, cur ? 'Folder: ' + cur.name : 'Belum dibuat (otomatis dibuat saat pertama menyimpan)')),
@@ -422,10 +453,136 @@
     users();
   }
 
+  /* ---------- folder tujuan pilihan pengguna (link / Google Picker) ---------- */
+  function loadDests() { try { E.dests = JSON.parse(lsGet(uk('dests')) || '[]'); } catch (e) { E.dests = []; } if (!Array.isArray(E.dests)) E.dests = []; }
+  function saveDests() { lsSet(uk('dests'), JSON.stringify(E.dests)); syncDestSel(); }
+  function addDest(id, name) {
+    var nm = String(name || 'Folder Drive').slice(0, 80), ex = E.dests.filter(function (d) { return d.id === id; })[0];
+    if (ex) ex.name = nm; else E.dests.push({ id: id, name: nm }); saveDests();
+  }
+  function parseFolderId(s) {
+    s = String(s || '').trim();
+    var m = /\/folders\/([A-Za-z0-9_-]{10,})/.exec(s) || /[?&]id=([A-Za-z0-9_-]{10,})/.exec(s);
+    if (m) return m[1];
+    return /^[A-Za-z0-9_-]{15,}$/.test(s) ? s : null;
+  }
+  function syncDestSel() {
+    var sel = $e('erhkDest'); if (!sel || typeof S === 'undefined' || !S) return;
+    var cur = (S.erhk && S.erhk.dest) || '', known = false;
+    sel.innerHTML = '';
+    sel.appendChild(h('option', { value: '' }, 'Otomatis (EasyRHK / Laporan ' + (S.role === 'waliAsrama' ? 'Wali Asrama' : 'Wali Asuh') + ')'));
+    E.dests.forEach(function (d) { if (d.id === cur) known = true; sel.appendChild(h('option', { value: d.id }, d.name)); });
+    if (cur && !known) sel.appendChild(h('option', { value: cur }, '(folder lain)'));
+    sel.value = cur;
+  }
+  function destChange() {
+    S.erhk = S.erhk || {}; S.erhk.dest = this.value; save();
+    if (E.driveOn) syncNow(); else say('Pilihan folder tersimpan; berlaku saat Drive terhubung.');
+  }
+  function loadPicker() {
+    return new Promise(function (res, rej) {
+      if (window.google && google.picker) return res();
+      function go() { gapi.load('picker', { callback: res, onerror: function () { rej({ message: 'Gagal memuat Google Picker.' }); } }); }
+      if (window.gapi && gapi.load) return go();
+      var sc = document.createElement('script'); sc.src = 'https://apis.google.com/js/api.js'; sc.async = true; sc.onload = go;
+      sc.onerror = function () { rej({ message: 'Gagal memuat Google Picker. Periksa internet.' }); }; document.head.appendChild(sc);
+    });
+  }
+  /** Jendela pemilih folder resmi Google. Memilih folder di sini adalah yang MEMBERI izin drive.file ke folder tersebut. */
+  function pickFolder() {
+    if (!CFG.GOOGLE_API_KEY) return Promise.reject({ message: 'GOOGLE_API_KEY belum diisi di config.js (lihat panduan Langkah Picker).' });
+    return getToken(true).then(function (t) {
+      return loadPicker().then(function () {
+        return new Promise(function (res) {
+          var view = new google.picker.DocsView(google.picker.ViewId.FOLDERS).setIncludeFolders(true).setSelectFolderEnabled(true).setMimeTypes('application/vnd.google-apps.folder');
+          new google.picker.PickerBuilder().setAppId(String(CFG.GOOGLE_CLIENT_ID).split('-')[0]).setOAuthToken(t).setDeveloperKey(CFG.GOOGLE_API_KEY)
+            .setOrigin(location.protocol + '//' + location.host).addView(view).setTitle('Pilih folder tujuan laporan').setLocale('id')
+            .setCallback(function (d) { if (d.action === 'picked') res(d.docs[0]); else if (d.action === 'cancel') res(null); }).build().setVisible(true);
+        });
+      });
+    });
+  }
+  function doPick(m, redraw) {
+    return pickFolder().then(function (doc) {
+      if (!doc) return; addDest(doc.id, doc.name); showMsg(m, 'Folder "' + doc.name + '" ditambahkan dan siap dipakai.', true); redraw();
+    }, function (e) { showMsg(m, e.message || 'Gagal membuka pemilih folder.', false); });
+  }
+  function addFromLink(text, m, redraw) {
+    var id = parseFolderId(text);
+    if (!id) return Promise.resolve(showMsg(m, 'Link folder tidak dikenali. Contoh: https://drive.google.com/drive/folders/1AbC...', false));
+    return getToken(true).then(function () { return folderInfo(id); }).then(function (info) {
+      if (info) { addDest(info.id, info.name); showMsg(m, 'Folder "' + info.name + '" ditambahkan.', true); redraw(); return; }
+      if (!CFG.GOOGLE_API_KEY) return showMsg(m, 'Aplikasi belum punya izin ke folder itu (izin Drive hanya mencakup folder yang dibuat/dipilih lewat aplikasi). Pasang GOOGLE_API_KEY sesuai panduan lalu gunakan tombol "Pilih folder dari Drive saya".', false);
+      showMsg(m, 'Izin ke folder ini belum ada. Jendela pemilih folder Google dibuka: pilih folder yang sama untuk memberi izin.', true);
+      return doPick(m, redraw);
+    }, function (e) { showMsg(m, e.message || 'Gagal.', false); });
+  }
+  function destSection(m, redraw) {
+    var box = h('div', {}, h('h3', {}, 'Folder tujuan saya (folder Drive yang sudah Anda punya)'),
+      h('p', { class: 's' }, 'Tambahkan folder Anda sendiri, lalu pilih folder mana yang dipakai untuk tiap laporan lewat menu "Simpan ke" di bilah atas.'));
+    var list = h('div', { class: 'erhk-list' });
+    if (!E.dests.length) list.appendChild(h('div', { class: 'erhk-item' }, 'Belum ada folder pilihan.'));
+    E.dests.forEach(function (d) {
+      list.appendChild(h('div', { class: 'erhk-item' }, h('div', { class: 't' }, h('b', {}, d.name)),
+        h('a', { href: 'https://drive.google.com/drive/folders/' + encodeURIComponent(d.id), target: '_blank', rel: 'noopener' }, 'Buka'),
+        btn('Hapus dari daftar', 'g', function () { E.dests = E.dests.filter(function (x) { return x.id !== d.id; }); saveDests(); redraw(); return Promise.resolve(); })));
+    });
+    var inp = h('input', { type: 'text', placeholder: 'Tempel link folder Drive…' });
+    box.appendChild(list);
+    box.appendChild(h('div', { class: 'row' }, inp, btn('Tambah dari link', '', function () { return addFromLink(inp.value, m, redraw); })));
+    box.appendChild(h('div', { class: 'row' }, btn('📂 Pilih folder dari Drive saya', 'g', function () { return doPick(m, redraw); })));
+    return box;
+  }
+
+  /* ---------- unggah hasil ke Drive ---------- */
+  function targetFolder() {
+    var role = S.role === 'waliAsrama' ? 'waliAsrama' : 'waliAsuh';
+    return ensureFolders(role, S.erhk && S.erhk.dest).then(function (fo) { return fo.tpl; });
+  }
+  function uploadBlob(blob, name, mime) {
+    if (!E.session || E.local) { alert('Masuk dan hubungkan Drive dulu.'); return Promise.resolve(); }
+    status('Mengunggah ' + name + '…', '');
+    return getToken(true).then(targetFolder).then(function (parent) { return multipart({ name: name, parent: parent, mime: mime || 'application/octet-stream', body: blob }); })
+      .then(function () { status('Terunggah ke Drive ✓ ' + name, 'ok'); say('✓ ' + name + ' tersimpan di folder tujuan Drive'); },
+            function (e) { status('Gagal unggah: ' + (e.message || 'kesalahan'), 'err'); alert('Gagal mengunggah: ' + (e.message || 'kesalahan') + '\nPastikan Drive terhubung dan folder tujuan masih ada.'); });
+  }
+  function uploadWord() { return uploadBlob(new Blob(['﻿', buildWord()], { type: 'application/msword' }), fnama() + '.doc', 'application/msword'); }
+  function uploadFile() {
+    var inp = h('input', { type: 'file', accept: '.pdf,.doc,.docx,.png,.jpg,.jpeg', style: 'display:none' });
+    inp.addEventListener('change', function () {
+      var f = inp.files[0]; inp.remove(); if (!f) return;
+      if (f.size > 25 * 1024 * 1024) return alert('Berkas lebih dari 25 MB. Kecilkan dulu.');
+      uploadBlob(f, f.name.replace(/[\\/:*?"<>|]/g, '-'), f.type);
+    });
+    document.body.appendChild(inp); inp.click();
+  }
+
+  /* ---------- perbaikan ekspor Word: foto potret/lanskap dihitung ulang agar muat di kotaknya ---------- */
+  function fixWordGallery(html) {
+    var d = new DOMParser().parseFromString(html, 'text/html'), imgs = [].slice.call(d.querySelectorAll('.gal img'));
+    if (!imgs.length) return html;
+    var live = [].slice.call(document.querySelectorAll('#doc .gal img')), L = S.lamp, n = L.cols || 3, dim = pageDim();
+    var cellW = Math.floor((dim[0] - 30) * 3.7795 / n - 10);                                  // lebar isi halaman (margin 1,5 cm) dibagi kolom
+    var maxH = L.mode === 'asli' ? Math.floor((dim[1] - 40) * 3.7795 * 0.45) : Math.max(60, Number(L.h) || 145);
+    imgs.forEach(function (im, i) {
+      var src = live[i], nw = (src && src.naturalWidth) || 800, nh = (src && src.naturalHeight) || 600;
+      var r = Math.min(cellW / nw, maxH / nh);
+      im.setAttribute('width', String(Math.max(1, Math.round(nw * r)))); im.setAttribute('height', String(Math.max(1, Math.round(nh * r)))); im.removeAttribute('style');
+    });
+    [].slice.call(d.querySelectorAll('.gal .gb')).forEach(function (g) { g.removeAttribute('style'); g.setAttribute('align', 'center'); });
+    [].slice.call(d.querySelectorAll('.gal td')).forEach(function (td) { td.setAttribute('align', 'center'); td.setAttribute('valign', 'top'); });
+    return '<html ' + [].slice.call(d.documentElement.attributes).map(function (a) { return a.name + '="' + a.value.replace(/"/g, '&quot;') + '"'; }).join(' ') + '>' + d.documentElement.innerHTML + '</html>';
+  }
+
   /* ---------- kait ke v17 ---------- */
   function hook() {
     var origSave = window.save;
     window.save = function () { origSave.apply(this, arguments); onSave(); };
+    var origRender = window.render;
+    window.render = function () { origRender.apply(this, arguments); syncDestSel(); };
+    var origWord = window.buildWord;
+    window.buildWord = function () { var html = origWord.apply(this, arguments); try { return fixWordGallery(html); } catch (e) { return html; } };
+    window.addEventListener('afterprint', function () { if (E.session && E.driveOn) say('Sudah menyimpan PDF? Klik "📤 Unggah PDF" di bilah atas untuk mengirimnya ke folder Drive.'); });
     var origReset = window.resetSemua;
     window.resetSemua = function () { origReset.apply(this, arguments); if (S && S.erhk) { delete S.erhk; } };
     window.addEventListener('beforeunload', function () { if (E.dirty && E.session) { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} } });
