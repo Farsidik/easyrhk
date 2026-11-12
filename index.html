@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Template Laporan RHK Wali Asuh &amp; Wali Asrama</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#e5e7eb;font-family:Arial,Helvetica,sans-serif;color:#111}
+.wm{background:#0f172a;color:#fde68a;font-size:12px;font-style:italic;text-align:center;padding:7px 12px;user-select:none}
+#top{position:sticky;top:0;z-index:30}
+#bar{position:relative;z-index:30;background:#fff;border-bottom:1px solid #cbd5e1;padding:8px 12px;font-size:12px;box-shadow:0 2px 6px rgba(0,0,0,.08)}
+.g{display:flex;flex-wrap:wrap;gap:5px 6px;align-items:center;margin:3px 0}
+.g>b{font-size:11px;color:#9a3412;margin-right:2px}
+.b{background:#ea580c;color:#fff;border:0;border-radius:6px;padding:6px 10px;font-size:12px;font-weight:600;cursor:pointer}
+.b.s{background:#475569}.b.l{background:#f1f5f9;color:#334155;border:1px solid #cbd5e1}
+#bar input,#bar select{font-size:12px;padding:4px 6px;border:1px solid #cbd5e1;border-radius:6px;background:#fff}
+#bar input[type=text]{width:130px}#bar input[type=range]{width:90px;padding:0}
+#bar select.hl{border-color:#ea580c;background:#fff7ed;font-weight:700}
+#bar.hide{display:none}
+#tbtn{display:none;position:fixed;bottom:14px;right:10px;z-index:40;background:#ea580c;color:#fff;border:0;border-radius:6px;padding:7px 12px;font-size:12px;font-weight:600;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.25);font-family:Arial,sans-serif}
+body.tbhide #tbtn{display:block}
+@media print{#tbtn{display:none!important}}
+#wrap{overflow-x:auto;padding:10px 0}
+#doc{margin:0 auto;padding:12mm 15mm;background:#fff;box-shadow:0 2px 12px rgba(0,0,0,.18);line-height:1.3}
+[contenteditable]{outline:none;border-radius:2px}
+[contenteditable]:hover{outline:1px dashed #94a3b8}
+[contenteditable]:focus{outline:2px solid #f97316;background:#fff7ed}
+[contenteditable]:empty:before{content:attr(data-ph);color:#94a3b8;font-weight:400;text-decoration:none}
+.row{position:relative}
+.ctl{display:none;position:absolute;right:0;top:-13px;background:#fff;border:1px solid #cbd5e1;border-radius:4px;padding:1px 2px;z-index:5;gap:2px}
+.row:hover>.ctl,.row:focus-within>.ctl{display:flex}
+.ctl button{font-size:10px;border:0;background:#f1f5f9;cursor:pointer;padding:2px 5px;border-radius:3px}
+.ctl .t{background:#fde68a}
+.add{display:none;gap:4px;margin:2px 0 2px 36px}.sec:hover .add{display:flex}
+.add button{font-size:10px;border:1px dashed #94a3b8;background:#fff;color:#475569;border-radius:4px;padding:2px 6px;cursor:pointer}
+button.add2{font-size:10px;border:1px dashed #94a3b8;background:#fff;color:#475569;border-radius:4px;padding:2px 6px;cursor:pointer;margin-bottom:4px}
+.kl{text-align:center}
+.kopline{border-top:3px solid #000;border-bottom:1px solid #000;height:2px;margin:6px 0 14px}
+.ph{border:1px dashed #94a3b8;color:#94a3b8;display:flex;align-items:center;justify-content:center;font-size:10px;cursor:pointer;margin:auto;text-align:center}
+.mini{font-size:9px;color:#64748b}.mini a{cursor:pointer;text-decoration:underline}
+.jd{text-align:center;font-weight:bold;margin:6px 0 12px;font-size:1.05em}
+.kv{border-collapse:collapse;width:100%}.kv td{padding:1px 0;vertical-align:top}
+.kv .n{width:30px}.hd .n{width:36px}.kv .l{width:125px}.kv .c{width:14px}
+.it{margin-left:36px}
+.p{text-align:justify;text-indent:36px;margin:2px 0 4px;white-space:pre-wrap}
+.sec{margin-top:6px;break-inside:auto}.hd{break-after:avoid}
+.v,.kv span{white-space:pre-wrap}
+.sh{font-size:11px;padding:1px 3px;border:1px solid #fdba74;background:#fff7ed;border-radius:4px;margin-left:6px;font-family:Arial,sans-serif}
+.tw{position:relative;break-inside:avoid;margin-top:18px}
+.sg{position:absolute;cursor:move;touch-action:none;outline:1px dashed #f97316;line-height:0}
+.rz{position:absolute;right:-6px;bottom:-6px;width:11px;height:11px;background:#f97316;cursor:nwse-resize;border-radius:2px}
+.lamp{page-break-before:always;break-before:page;margin-top:30px}
+.pg{border-top:1px dashed #94a3b8;color:#94a3b8;font-size:10px;text-align:center;margin:20px 0 -20px}
+.lh{margin:10px 0 4px}
+.tb1{width:100%;border-collapse:collapse;table-layout:fixed}
+.tb1 th,.tb1 td{border:1px solid #000;padding:2px 4px;vertical-align:top;overflow-wrap:anywhere}
+.tb1 th{text-align:center;font-weight:bold}
+.tb1 tr{break-inside:avoid;page-break-inside:avoid}
+.pl{white-space:pre-wrap}
+.tb1 .ctl{right:2px;top:2px}
+.row.dc>.ctl{top:auto;bottom:2px}
+.dti{width:100%;font-size:10px;padding:1px 2px;border:1px solid #cbd5e1;border-radius:4px;margin-bottom:2px;font-family:inherit}
+.gal{width:100%;border-collapse:collapse;table-layout:fixed;margin-top:6px}
+.gal tr{break-inside:avoid;page-break-inside:avoid}
+.gal td{padding:3px;vertical-align:top;text-align:center}
+.gb{display:flex;align-items:center;justify-content:center;background:#f1f5f9}
+.gal .ctl{top:2px;right:2px}
+.cap{font-size:8pt;margin-top:1px;min-height:4px}
+.ket{text-align:center;font-weight:bold;margin-top:12px;white-space:pre-wrap}
+.lamp .jd{margin-top:2px}
+#tp{display:none;position:fixed;z-index:60;width:400px;max-width:94vw;max-height:70vh;overflow:auto;background:#fff;border:1px solid #94a3b8;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.25);font-family:Arial,sans-serif;font-size:12px;color:#111}
+#tp h4{margin:0;padding:8px 10px;background:#fff7ed;border-bottom:1px solid #fed7aa;font-size:12px;position:sticky;top:0}
+.ti{display:flex;gap:4px;padding:6px 8px;border-bottom:1px solid #f1f5f9;align-items:flex-start}
+.ti .tx{flex:1;text-align:left;background:#fff;border:1px solid #e2e8f0;border-radius:6px;padding:5px 7px;cursor:pointer;font-size:12px;white-space:pre-wrap;display:-webkit-box;-webkit-line-clamp:6;-webkit-box-orient:vertical;overflow:hidden;font-family:inherit}
+.ti .tx:hover{background:#ffedd5;border-color:#fb923c}
+.ti .rp{font-size:10px;border:1px solid #cbd5e1;background:#f1f5f9;border-radius:5px;padding:3px 5px;cursor:pointer}
+#tp .ft2{display:flex;gap:6px;flex-wrap:wrap;padding:8px;position:sticky;bottom:0;background:#fff;border-top:1px solid #e2e8f0}
+.rtabs{display:flex;flex-wrap:wrap;gap:4px;padding:6px 8px 0}
+.rtab{font-size:11px;border:1px solid #cbd5e1;background:#f8fafc;border-radius:6px;padding:3px 8px;cursor:pointer;font-family:inherit}
+.rtab.on{background:#ea580c;color:#fff;border-color:#ea580c}
+.rhd{padding:6px 10px;background:#f8fafc;border-bottom:1px solid #e2e8f0;font-size:11px;color:#334155}
+#tm{display:none;position:fixed;inset:0;z-index:70;background:rgba(15,23,42,.5);align-items:center;justify-content:center}
+#tm .bx{background:#fff;width:min(900px,96vw);max-height:90vh;overflow:auto;border-radius:10px;padding:14px;font-family:Arial,sans-serif;font-size:12px;color:#111}
+#tm textarea{width:100%;min-height:54px;font:12px Arial,sans-serif;border:1px solid #cbd5e1;border-radius:6px;padding:5px;resize:vertical}
+#tm input[type=text]{border:1px solid #cbd5e1;border-radius:6px;padding:4px 6px;font:12px Arial,sans-serif}
+.tmi{display:flex;gap:4px;margin-bottom:6px;align-items:flex-start}
+.gbx{border:1px solid #e2e8f0;border-radius:8px;padding:8px;margin-bottom:10px;background:#f8fafc}
+.gh{display:flex;gap:4px;margin-bottom:6px;align-items:center}
+.gt{width:100%;font-size:11px;border-collapse:collapse}.gt td{border:1px solid #e2e8f0;padding:3px 6px}
+#tm .b2{font-size:10px;border:1px dashed #94a3b8;background:#fff;color:#475569;border-radius:4px;padding:2px 6px;cursor:pointer}
+#toast{display:none;position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:#0f172a;color:#fff;padding:6px 12px;border-radius:6px;font-size:12px;z-index:80;font-family:Arial,sans-serif;max-width:92vw;text-align:center}
+#warn{display:none;background:#fef2f2;color:#b91c1c;font-size:12px;padding:6px 12px}
+@media print{
+ body{background:#fff}.no-print,.wm,#bar,#warn{display:none!important}
+ #wrap{padding:0;overflow:visible}
+ #doc{margin:0!important;padding:0!important;width:auto!important;box-shadow:none;zoom:1!important}
+ [contenteditable]:hover,[contenteditable]:focus{outline:none;background:none}
+ [contenteditable]:empty:before{content:""}
+ .sg{outline:none}.gb{background:none}
+ thead{display:table-header-group}
+ .lamp{margin-top:0}
+ .gal img{max-width:100%!important;max-height:var(--maxh,150mm)!important;object-fit:contain}
+ .gb{max-height:var(--maxh,150mm)!important;display:block!important;text-align:center}
+}
+#doc img{max-width:100%}
+.kl.row:focus-within:not(:hover)>.ctl{display:none}
+#doc.hide-kopctl .kl>.ctl{display:none!important}
+#doc.hide-allctl .ctl{display:none!important}
+#doc .p,#doc .ket,#doc .kv span,#doc .jd{overflow-wrap:anywhere}
+</style>
+<style id="pgst">@page{size:210mm 297mm;margin:12mm 15mm}</style>
+</head>
+<body>
+<div id="top">
+<div class="wm">Template ini dibuat oleh IG: @Farsidik, Dilarang keras memperjualbelikan atau mengomersialkan template ini dalam bentuk apa pun tanpa izin pembuat.</div>
+
+<div id="bar" class="no-print">
+ <div class="g">
+  <button class="b l" onclick="toggleBar()" title="Sembunyikan toolbar agar layar lebih luas">🔼 Sembunyikan toolbar</button>
+  <button class="b" onclick="unduhPdf()" title="Buka jendela cetak dengan ukuran kertas sudah terpasang, lalu pilih Simpan sebagai PDF">📥 Unduh PDF</button>
+  <button class="b" onclick="unduhWord()">📄 Unduh Word</button><button class="b s" onclick="validasiLaporan()">✓ Periksa laporan</button>
+  <button class="b s" onclick="cadangkan()">💾 Cadangkan</button>
+  <button class="b s" onclick="document.getElementById('fRestore').click()">📂 Pulihkan</button>
+  <button class="b l" onclick="resetSemua()">↺ Reset</button>
+  <select id="pageSel" onchange="setOpt(null,'page',this.value)" title="Ukuran kertas PDF"><option value="a4">A4 (210 × 297 mm)</option><option value="f4">F4 / Folio (215 × 330 mm)</option><option value="legal">Legal (216 × 356 mm)</option><option value="letter">Letter (216 × 279 mm)</option></select>
+  <select id="orientSel" onchange="setOpt(null,'orient',this.value)" title="Arah kertas"><option value="portrait">Tegak (portrait)</option><option value="landscape">Mendatar (landscape)</option></select>
+  <select id="fontSel" onchange="setOpt(null,'font',this.value)"><option>Arial</option><option>Times New Roman</option><option>Calibri</option><option>Tahoma</option></select>
+  <select id="fsSel" onchange="setOpt(null,'fs',+this.value)"><option>10</option><option>10.5</option><option>11</option><option>11.5</option><option>12</option></select>
+  <select id="zoomSel" onchange="fitZoom()" title="Zoom layar"><option value="auto">Zoom: pas layar</option><option value="0.5">50%</option><option value="0.75">75%</option><option value="1">100%</option></select>
+  <select id="ctlSel" onchange="setOpt(null,'ctlMode',this.value)" title="Tombol kecil yang muncul di atas teks saat ditunjuk/diklik"><option value="show">Tombol edit: tampil semua</option><option value="kop">Tombol edit: sembunyikan di kop</option><option value="all">Tombol edit: sembunyikan semua</option></select>
+ </div>
+ <div class="g"><b>👤 Jabatan</b>
+  <select id="roleSel" class="hl" onchange="switchRole(this.value)" title="Pilih jabatan sesuai matriks SKP"><option value="waliAsuh">Wali Asuh</option><option value="waliAsrama">Wali Asrama</option></select>
+  <span style="color:#64748b">Daftar RHK dan template mengikuti matriks jabatan yang dipilih.</span>
+ </div>
+ <div class="g"><b>🎯 Pilih RHK &amp; shift</b>
+  <select id="rhkSel" class="hl" onchange="applyRhk(this.value)" title="Mengisi judul, pendahuluan, kegiatan, hasil, kesimpulan, dan kalimat dokumentasi sesuai RHK"><option value="">— Pilih RHK —</option></select>
+  <select id="shiftSel" class="hl" onchange="setShift(this.value)" title="Mengisi Waktu Pelaksanaan"><option value="pagi">Shift Pagi (07:00 – 15:00)</option><option value="siang">Shift Siang (15:00 – 23:00)</option><option value="malam">Shift Malam (23:00 – 07:00)</option></select>
+  <button class="b" onclick="bukaTm('nar')">📝 Kelola template</button>
+  <span style="color:#64748b">Setelah memilih RHK, semua isian tetap bisa diedit. Tiap paragraf punya tombol 📋 Template untuk menukar versi RHK.</span>
+ </div>
+ <div class="g"><b>⚡ Isi cepat</b>
+  <input type="text" id="fNama" placeholder="Nama petugas"><input type="text" id="fNip" placeholder="NIP / NIPPPPK"><input type="text" id="fJab" placeholder="Jabatan">
+  <input type="date" id="fTgl" title="Tanggal pelaksanaan"><input type="text" id="fTempat" placeholder="Kota tanda tangan" style="width:110px">
+  <button class="b" onclick="isiCepat()">Terapkan</button>
+ </div>
+ <div class="g"><b>✨ Bantuan AI</b>
+  <input type="text" id="aiAktivitas" placeholder="Tuliskan kegiatan nyata yang dilakukan" style="width:min(430px,55vw)">
+  <button class="b" onclick="buatPromptAI()">Buat prompt AI</button>
+  <button class="b s" onclick="terapkanAI()">Terapkan hasil AI</button>
+  <span style="color:#64748b">Salin prompt ke ChatGPT, lalu tempel hasil JSON ke kotak di bawah.</span>
+ </div>
+ <div class="g"><textarea id="aiHasil" placeholder="Tempel hasil dari ChatGPT di sini (format JSON yang diminta oleh prompt)..." style="width:min(760px,96%);min-height:58px;padding:6px;border:1px solid #cbd5e1;border-radius:6px;font:12px Arial"></textarea></div>
+ <div class="g"><b>📅 Tabel lampiran</b>
+  <button class="b" onclick="tambahBaris(parseInt(document.getElementById('nBaris').value)||1)">+ Tambah baris</button>
+  <input type="number" id="nBaris" min="1" max="60" value="1" style="width:52px" title="Jumlah baris yang ditambah">
+  <button class="b s" onclick="urutkan()">↕ Urutkan tanggal</button>
+  <label><input type="checkbox" id="autoSort" onchange="setOpt(null,'auto',this.checked)"> urut otomatis saat tanggal diganti</label>
+  <button class="b l" onclick="isiBulan()">Lengkapi 1 bulan</button>
+  <button class="b l" onclick="hapusKosong()">Hapus baris kosong</button>
+  <label><input type="checkbox" id="lampKop" onchange="setOpt('lamp','kop',this.checked)"> kop di halaman lampiran</label>
+ </div>
+ <div class="g"><b>✍️ Tanda tangan</b>
+  <button class="b s" onclick="document.getElementById('fTtd').click()">Unggah</button><button class="b l" onclick="hapusTtd()">Hapus</button>
+  <label>Ukuran <input type="range" id="ttdW" min="40" max="320" onchange="setOpt('ttd','w',+this.value)"></label>
+  <label>Ruang <input type="range" id="ttdSp" min="30" max="160" onchange="setOpt('ttd','sp',+this.value)"></label>
+  <select id="ttdAl" onchange="setOpt('ttd','al',this.value)" title="Perataan tanggal, nama pelapor, dan NIP"><option value="r">Rata kanan</option><option value="c">Rata tengah</option><option value="l">Rata kiri</option></select>
+  <label>Geser X <input type="range" id="ttdX" min="-120" max="120" value="0" onchange="setOpt('ttd','dx',+this.value)"></label>
+  <label>Geser Y <input type="range" id="ttdY" min="-40" max="100" value="0" onchange="setOpt('ttd','dy',+this.value)"></label>
+  <label><input type="checkbox" id="ttdMul" onchange="setOpt('ttd','mul',this.checked)"> latar putih transparan</label>
+  <span style="color:#64748b">Atur perataan dan geser blok tanggal/nama/NIP dengan penggeser X dan Y. Gambar tanda tangan tetap dapat diseret.</span>
+ </div>
+ <div class="g"><b>🖼️ Logo &amp; Foto</b>
+  <label>Logo <input type="range" id="logoSz" min="40" max="150" onchange="setOpt('kop','logo',+this.value)"></label>
+  <button class="b s" onclick="document.getElementById('fFoto').click()">+ Tambah foto</button>
+  <select id="colsSel" onchange="setOpt('lamp','cols',+this.value)"><option value="1">1 kolom</option><option value="2">2 kolom</option><option value="3">3 kolom</option><option value="4">4 kolom</option></select>
+  <select id="modeSel" onchange="setOpt('lamp','mode',this.value)"><option value="contain">Kotak seragam (utuh)</option><option value="cover">Kotak seragam (dipotong)</option><option value="asli">Ukuran asli</option></select>
+  <label>Tinggi <input type="range" id="hRange" min="70" max="420" onchange="setOpt('lamp','h',+this.value)"></label>
+  <button class="b l" onclick="hapusFotoSemua()">Kosongkan foto</button>
+  <button class="b l" onclick="pilihLogo('R')">+ Logo kanan</button>
+  <button class="b l" onclick="addKop()">+ Baris kop</button>
+ </div>
+</div>
+</div>
+<button id="tbtn" class="no-print" onclick="toggleBar()" title="Tampilkan kembali toolbar">🔽 Tampilkan toolbar</button>
+<div id="warn">Penyimpanan browser penuh, perubahan terakhir belum tersimpan. Klik “Cadangkan” untuk menyimpan ke file, atau kurangi jumlah foto.</div>
+
+<div id="wrap"><div id="doc"></div></div>
+
+<div class="wm" style="margin-top:30px;padding:9px 12px">Template ini dibuat oleh IG: @Farsidik, Dilarang keras memperjualbelikan atau mengomersialkan template ini dalam bentuk apa pun tanpa izin pembuat.</div>
+
+<div id="tp" class="no-print"></div>
+<div id="tm" class="no-print" onclick="if(event.target===this)tutupTm()"><div class="bx"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:8px;flex-wrap:wrap"><b style="font-size:14px">📝 Kelola Template</b><span><button class="b l" onclick="resetTpl()">Kembalikan bawaan</button> <button class="b" onclick="tutupTm()">Selesai</button></span></div><div id="tmTabs" class="rtabs" style="padding:0 0 8px"></div><div id="tmBody"></div></div></div>
+<div id="toast" class="no-print"></div>
+
+<input type="file" id="fLogo" accept="image/*" hidden>
+<input type="file" id="fTtd" accept="image/*" hidden>
+<input type="file" id="fFoto" accept="image/*" multiple hidden>
+<input type="file" id="fRestore" accept=".json,application/json" hidden>
+
+<script>
+const KEY = 'rhk_template_v1';
+const CE = 'contenteditable="true"';
+const $ = id => document.getElementById(id);
+const doc = $('doc');
+const HARI = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+const BLN = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+const p2 = n => String(n).padStart(2, '0');
+const ymd = d => d.getFullYear() + '-' + p2(d.getMonth() + 1) + '-' + p2(d.getDate());
+const dobj = ds => new Date(ds + 'T00:00:00');
+const hariLabel = ds => { const d = dobj(ds); return `${HARI[d.getDay()]}, ${d.getDate()} ${BLN[d.getMonth()]} ${d.getFullYear()}`; };
+const tglLabel = ds => { const d = dobj(ds); return `${d.getDate()} ${BLN[d.getMonth()]} ${d.getFullYear()}`; };
+const todayS = ymd(new Date());
+const SHIFT3 = { pagi: ['07:00:00', '15:00:00'], siang: ['15:00:00', '23:00:00'], malam: ['23:00:00', '07:00:00'] };
+const waktuTxt = k => SHIFT3[k] ? `Pukul ${SHIFT3[k][0]} – ${SHIFT3[k][1]} WIB` : '';
+const SHIFTS = [['pagi', 'Shift Pagi (07:00 - 15:00)'], ['siang', 'Shift Siang (15:00 - 23:00)'], ['malam', 'Shift Malam (23:00 - 07:00)'], ['lepas', 'Lepas Piket'], ['libur', 'Libur']];
+const shiftLabel = k => (SHIFTS.find(x => x[0] === k) || [0, ''])[1];
+const FIELDS = [['judul', 'Judul Laporan'], ['gambaran', 'Gambaran Umum'], ['maksud', 'Maksud dan Tujuan'], ['ruang', 'Ruang Lingkup'], ['kegiatan', 'Kegiatan yang Dilaksanakan'], ['hasil', 'Hasil yang Dicapai'], ['kesimpulan', 'Kesimpulan'], ['ket', 'Kalimat di bawah Dokumentasi']];
+const fieldName = f => (FIELDS.find(x => x[0] === f) || [0, f])[1];
+const PG = { legal: [356, 216], f4: [330, 215], a4: [297, 210], letter: [279, 216] };
+const NAR = {"judul":[{"l":"RHK 1","t":"LAPORAN BIMBINGAN DAN PENGAJARAN PESERTA DIDIK"},{"l":"RHK 2","t":"LAPORAN PEMBINAAN KEMANDIRIAN PESERTA DIDIK"},{"l":"RHK 3","t":"LAPORAN PENDAMPINGAN, BIMBINGAN, MOTIVASI, DAN PEMBINAAN PESERTA DIDIK DALAM ASPEK IBADAH, BELAJAR, DAN AKTIVITAS SEHARI-HARI"},{"l":"RHK 4","t":"LAPORAN BIMBINGAN SPIRITUAL DAN EMOSIONAL, PENERAPAN DISIPLIN, KESEHATAN, DAN KEGIATAN BELAJAR PESERTA DIDIK"},{"l":"RHK 5","t":"LAPORAN PENDAMPINGAN PESERTA DIDIK BERKEBUTUHAN KHUSUS"}],"gambaran":[{"l":"RHK 1","t":"Bimbingan dan pengajaran merupakan bagian dari pendampingan peserta didik dalam mendukung proses belajar dan pengembangan kemampuan. Pelaksanaan kegiatan disesuaikan dengan kebutuhan peserta didik, materi atau keterampilan yang diberikan, serta kondisi pada saat kegiatan berlangsung."},{"l":"RHK 2","t":"Pembinaan kemandirian diarahkan untuk membantu peserta didik mengembangkan kemampuan mengurus diri, melaksanakan tanggung jawab, mengambil inisiatif, dan melakukan aktivitas sehari-hari secara bertahap. Pembinaan dilakukan melalui pembiasaan, pemberian arahan, kesempatan untuk mencoba, serta pemantauan sesuai kebutuhan peserta didik."},{"l":"RHK 3","t":"Pendampingan, bimbingan, motivasi, dan pembinaan dilakukan untuk mendukung peserta didik dalam menjalankan ibadah, mengikuti kegiatan belajar, serta melaksanakan aktivitas sehari-hari. Peran wali asuh disesuaikan dengan kebutuhan peserta didik, baik melalui pemberian arahan, penguatan motivasi, pemantauan, maupun bantuan langsung."},{"l":"RHK 4","t":"Bimbingan spiritual dan emosional, penerapan disiplin, perhatian terhadap kesehatan, serta dukungan terhadap kegiatan belajar merupakan aspek yang saling berkaitan dalam pengasuhan peserta didik. Pelaksanaannya dilakukan melalui pendampingan dan pemantauan sesuai kondisi, kebutuhan, serta ketentuan yang berlaku di lingkungan Sekolah Rakyat."},{"l":"RHK 5","t":"Pendampingan peserta didik berkebutuhan khusus dilaksanakan dengan memperhatikan kebutuhan, kemampuan, dan karakteristik masing-masing peserta didik. Pendampingan diarahkan untuk membantu peserta didik berpartisipasi dalam kegiatan, mengembangkan potensi, serta memperoleh dukungan yang sesuai tanpa mengabaikan kemandirian dan martabatnya."}],"maksud":[{"l":"RHK 1","t":"Kegiatan ini dimaksudkan untuk memberikan bimbingan dan pengajaran sesuai kebutuhan peserta didik. Tujuannya adalah membantu peserta didik memahami materi atau arahan yang diberikan, mengembangkan pengetahuan dan keterampilan, serta memperoleh dukungan dalam proses belajar."},{"l":"RHK 2","t":"Kegiatan ini dimaksudkan untuk membina kemampuan peserta didik agar semakin mandiri dalam melaksanakan aktivitas dan memenuhi kebutuhan sehari-hari. Tujuannya adalah menumbuhkan inisiatif, tanggung jawab, kebiasaan positif, serta kemampuan melakukan tugas sesuai tahap perkembangan dan kemampuan masing-masing."},{"l":"RHK 3","t":"Kegiatan ini dimaksudkan untuk memberikan pendampingan, bimbingan, motivasi, dan pembinaan dalam aspek ibadah, belajar, dan aktivitas sehari-hari. Tujuannya adalah membantu peserta didik menjalankan kegiatan secara terarah, membangun kebiasaan positif, serta memperoleh dukungan ketika menghadapi kesulitan."},{"l":"RHK 4","t":"Kegiatan ini dimaksudkan untuk memberikan dukungan yang terarah terhadap kebutuhan spiritual, emosional, kedisiplinan, kesehatan, dan kegiatan belajar peserta didik. Tujuannya adalah membantu peserta didik menjalani kegiatan secara aman, tertib, sehat, dan bertanggung jawab serta memperoleh tindak lanjut ketika ditemukan kendala."},{"l":"RHK 5","t":"Kegiatan ini dimaksudkan untuk memberikan pendampingan yang sesuai dengan kebutuhan peserta didik berkebutuhan khusus. Tujuannya adalah memfasilitasi partisipasi dalam kegiatan, membantu mengatasi hambatan yang dihadapi, dan mendukung perkembangan kemampuan serta kemandirian peserta didik."}],"ruang":[{"l":"RHK 1","t":"Ruang lingkup meliputi persiapan dan pelaksanaan bimbingan atau pengajaran, pemberian arahan, pendampingan proses belajar, serta pemantauan pemahaman peserta didik sesuai kegiatan yang dilaksanakan."},{"l":"RHK 2","t":"Ruang lingkup meliputi pembiasaan dan pendampingan aktivitas sehari-hari, perawatan diri, kebersihan diri dan lingkungan, pengelolaan perlengkapan pribadi, tanggung jawab, serta keterampilan hidup lain sesuai kegiatan yang dilaksanakan."},{"l":"RHK 3","t":"Ruang lingkup meliputi pendampingan dan pembinaan dalam pelaksanaan ibadah, kegiatan belajar, dan aktivitas sehari-hari, termasuk pemberian motivasi, arahan, pemantauan, serta bantuan sesuai kebutuhan peserta didik."},{"l":"RHK 4","t":"Ruang lingkup meliputi bimbingan spiritual dan emosional, pemantauan serta penerapan disiplin, perhatian dan pendampingan terkait kondisi kesehatan, serta dukungan terhadap pelaksanaan kegiatan belajar peserta didik."},{"l":"RHK 5","t":"Ruang lingkup meliputi identifikasi kebutuhan pendampingan berdasarkan informasi yang tersedia, pemberian bantuan atau penyesuaian yang diperlukan, pemantauan partisipasi peserta didik, serta koordinasi dengan pihak terkait apabila diperlukan dan dilakukan."}],"kegiatan":[{"l":"RHK 1","t":"Wali asuh melaksanakan bimbingan dan pengajaran kepada peserta didik melalui kegiatan [sebutkan kegiatan]. Pelaksanaan dilakukan dengan [uraikan materi, arahan, metode, atau bantuan yang diberikan]. Wali asuh memberikan kesempatan kepada peserta didik untuk [praktik/menjawab/mengerjakan tugas/mencoba keterampilan] serta melakukan pemantauan terhadap proses dan pemahaman peserta didik."},{"l":"RHK 2","t":"Wali asuh melaksanakan pembinaan kemandirian melalui kegiatan [sebutkan aktivitas]. Peserta didik diarahkan untuk melakukan [uraikan tugas atau keterampilan] secara mandiri atau dengan bantuan sesuai kebutuhan. Wali asuh memberikan contoh atau arahan apabila diperlukan, kemudian memantau pelaksanaan dan tanggung jawab peserta didik."},{"l":"RHK 3","t":"Wali asuh memberikan pendampingan, bimbingan, motivasi, dan pembinaan kepada peserta didik dalam kegiatan [ibadah/belajar/aktivitas sehari-hari]. Pendampingan dilakukan dengan [uraikan arahan, penguatan motivasi, pemantauan, atau bantuan yang diberikan] sesuai kondisi dan kebutuhan peserta didik."},{"l":"RHK 4","t":"Wali asuh melaksanakan pendampingan pada aspek [spiritual/emosional/disiplin/kesehatan/kegiatan belajar] melalui kegiatan [sebutkan kegiatan]. Pelaksanaan meliputi [uraikan tindakan yang benar-benar dilakukan], pemantauan kondisi atau perilaku peserta didik, serta [koordinasi atau tindak lanjut apabila memang dilakukan]."},{"l":"RHK 5","t":"Wali asuh memberikan pendampingan kepada peserta didik berkebutuhan khusus, yaitu [inisial/nama sesuai ketentuan pelaporan], dalam kegiatan [sebutkan kegiatan]. Bantuan atau penyesuaian yang diberikan berupa [uraikan bentuk dukungan] dengan mempertimbangkan kebutuhan dan kemampuan peserta didik. Perkembangan atau respons peserta didik dipantau selama kegiatan berlangsung."}],"hasil":[{"l":"RHK 1","t":"Kegiatan bimbingan dan pengajaran telah dilaksanakan melalui [sebutkan kegiatan]. Peserta didik [uraikan hasil yang dapat diamati, misalnya mengikuti arahan, menyelesaikan tugas, memahami materi, atau mempraktikkan keterampilan]. Hal yang masih memerlukan pendampingan adalah [isi jika ada]."},{"l":"RHK 2","t":"Kegiatan pembinaan kemandirian telah dilaksanakan melalui [sebutkan kegiatan]. Selama kegiatan, peserta didik menunjukkan [uraikan perilaku atau kemampuan yang benar-benar terlihat], dengan tingkat bantuan [mandiri/dengan arahan/dengan bantuan langsung]. Aspek yang masih perlu dibiasakan adalah [isi jika ada]."},{"l":"RHK 3","t":"Pendampingan dalam aspek ibadah, belajar, dan/atau aktivitas sehari-hari telah dilaksanakan sesuai kegiatan yang dilakukan. Hasil yang teramati yaitu [uraikan respons, partisipasi, atau perubahan perilaku yang benar-benar terlihat]. Kebutuhan pendampingan lanjutan meliputi [isi jika ada]."},{"l":"RHK 4","t":"Pendampingan pada aspek [sebutkan aspek] telah dilaksanakan. Hasil pemantauan menunjukkan [uraikan kondisi, respons, atau perilaku yang dapat dibuktikan]. Apabila ditemukan kendala, tindak lanjut yang telah dilakukan adalah [uraikan; hapus jika tidak ada]."},{"l":"RHK 5","t":"Pendampingan kepada peserta didik berkebutuhan khusus telah diberikan dalam kegiatan [sebutkan kegiatan]. Peserta didik menunjukkan [uraikan partisipasi atau respons yang teramati] dengan dukungan berupa [sebutkan bantuan]. Kebutuhan atau tindak lanjut berikutnya adalah [isi berdasarkan hasil pemantauan]."}],"kesimpulan":[{"l":"RHK 1","t":"Secara keseluruhan, bimbingan dan pengajaran kepada peserta didik telah dilaksanakan melalui [sebutkan kegiatan]. Pelaksanaan kegiatan memberikan dukungan terhadap proses belajar peserta didik. Pendampingan selanjutnya perlu disesuaikan dengan pemahaman dan kebutuhan yang masih ditemukan."},{"l":"RHK 2","t":"Secara keseluruhan, pembinaan kemandirian telah dilaksanakan melalui pembiasaan dan pendampingan pada aktivitas [sebutkan]. Kemampuan peserta didik perlu terus diperkuat melalui kesempatan untuk mencoba, arahan yang proporsional, dan pemantauan secara berkelanjutan."},{"l":"RHK 3","t":"Secara keseluruhan, pendampingan, bimbingan, motivasi, dan pembinaan dalam aspek ibadah, belajar, dan aktivitas sehari-hari telah dilaksanakan sesuai kebutuhan dan kegiatan yang berlangsung. Pendampingan lanjutan dilakukan dengan memperhatikan respons serta kebutuhan masing-masing peserta didik."},{"l":"RHK 4","t":"Secara keseluruhan, bimbingan spiritual dan emosional, penerapan disiplin, perhatian terhadap kesehatan, dan dukungan kegiatan belajar telah dilaksanakan sesuai kegiatan yang dilakukan. Hasil pemantauan menjadi dasar untuk menentukan pendampingan atau tindak lanjut berikutnya."},{"l":"RHK 5","t":"Secara keseluruhan, pendampingan kepada peserta didik berkebutuhan khusus telah diberikan dengan mempertimbangkan kebutuhan dan kemampuan peserta didik. Dukungan perlu dilanjutkan dan disesuaikan berdasarkan hasil pemantauan serta koordinasi dengan pihak terkait apabila diperlukan."}],"ket":[{"l":"RHK 1","t":"Bimbingan dan pengajaran peserta didik melalui kegiatan [nama kegiatan/materi], dengan pendampingan berupa [bentuk arahan atau bantuan yang tampak pada dokumentasi]."},{"l":"RHK 2","t":"Pembinaan kemandirian peserta didik melalui kegiatan [nama aktivitas], dengan fokus pada [keterampilan atau tanggung jawab yang dilatih]."},{"l":"RHK 3","t":"Pendampingan, bimbingan, motivasi, dan pembinaan peserta didik dalam aspek [ibadah/belajar/aktivitas sehari-hari] melalui kegiatan [nama kegiatan]."},{"l":"RHK 4","t":"Bimbingan spiritual dan emosional, penerapan disiplin, perhatian terhadap kesehatan, atau dukungan kegiatan belajar peserta didik melalui [nama kegiatan sesuai dokumentasi]."},{"l":"RHK 5","t":"Pendampingan peserta didik berkebutuhan khusus dalam kegiatan [nama kegiatan], dengan dukungan berupa [bentuk pendampingan yang diberikan sesuai kebutuhan]."}]};
+const DEFTPL = { nar: NAR, keg: ["RHK 1. Bimbingan dan pengajaran peserta didik", "RHK 2. Pembinaan kemandirian peserta didik", "RHK 3. Pendampingan, bimbingan, motivasi, dan pembinaan dalam aspek ibadah, belajar, dan aktivitas sehari-hari", "RHK 4. Bimbingan spiritual dan emosional, disiplin, kesehatan, dan kegiatan belajar", "RHK 5. Pendampingan peserta didik berkebutuhan khusus"], rhk: [{"kode": "RHK 1", "judul": "Bimbingan dan pengajaran peserta didik", "fokus": "Bimbingan belajar", "tip": "Digunakan apabila foto menunjukkan kegiatan belajar, membantu anak memahami materi, mengerjakan tugas, atau memberikan arahan terkait pembelajaran.", "items": [{"judul": "Pendampingan belajar", "teks": "Memberikan pendampingan kepada peserta didik dalam melaksanakan kegiatan belajar serta membantu mengatasi kesulitan yang dihadapi selama proses pembelajaran."}, {"judul": "Membantu pengerjaan tugas", "teks": "Mendampingi peserta didik dalam menyelesaikan tugas sekolah serta memberikan arahan agar peserta didik dapat memahami dan mengerjakan tugas secara mandiri."}, {"judul": "Motivasi belajar", "teks": "Memberikan motivasi dan dorongan kepada peserta didik untuk meningkatkan semangat belajar serta membangun kebiasaan belajar yang teratur."}, {"judul": "Pemantauan kegiatan belajar", "teks": "Melakukan pemantauan terhadap pelaksanaan kegiatan belajar peserta didik serta memberikan arahan apabila terdapat kendala dalam proses pembelajaran."}]}, {"kode": "RHK 2", "judul": "Pembinaan kemandirian peserta didik", "fokus": "Aktivitas sehari-hari dan kemandirian", "tip": "Digunakan untuk kegiatan yang melatih kemampuan peserta didik dalam mengurus diri, menjaga kebersihan, merapikan perlengkapan, dan melaksanakan tanggung jawab sehari-hari.", "items": [{"judul": "Pendampingan makan", "teks": "Mendampingi peserta didik dalam melaksanakan kegiatan makan serta membiasakan perilaku tertib, mandiri, dan menjaga kebersihan selama makan."}, {"judul": "Edukasi kebersihan diri", "teks": "Memberikan edukasi dan arahan kepada peserta didik mengenai pentingnya menjaga kebersihan diri serta membiasakan pola hidup bersih dan sehat."}, {"judul": "Kegiatan bersih-bersih", "teks": "Mendampingi peserta didik dalam melaksanakan kegiatan membersihkan lingkungan asrama guna menumbuhkan kepedulian, tanggung jawab, dan kemandirian dalam menjaga kebersihan."}, {"judul": "Merapikan tempat tidur", "teks": "Memberikan arahan dan pendampingan kepada peserta didik dalam merapikan tempat tidur serta menjaga kerapian lingkungan tempat tinggal."}, {"judul": "Pembiasaan kebersihan lingkungan", "teks": "Membimbing peserta didik untuk menjaga kebersihan dan kerapian lingkungan asrama melalui pembiasaan membuang sampah pada tempatnya dan merawat fasilitas bersama."}, {"judul": "Pendampingan aktivitas harian", "teks": "Mendampingi peserta didik dalam melaksanakan aktivitas sehari-hari serta mendorong terbentuknya kebiasaan hidup tertib, mandiri, dan bertanggung jawab."}, {"judul": "Pembiasaan menjaga barang pribadi", "teks": "Memberikan arahan kepada peserta didik untuk menjaga, menyimpan, dan merapikan barang pribadi agar terbentuk sikap mandiri dan bertanggung jawab."}]}, {"kode": "RHK 3", "judul": "Pendampingan, bimbingan, motivasi, dan pembinaan dalam aspek ibadah, belajar, dan aktivitas sehari-hari", "fokus": "Ibadah, belajar, dan aktivitas sehari-hari", "tip": "Digunakan untuk kegiatan pendampingan ibadah, belajar, aktivitas sehari-hari, atau pemberian motivasi sesuai kegiatan yang benar-benar dilaksanakan.", "items": [{"judul": "Pendampingan ibadah", "teks": "Mendampingi dan mengarahkan peserta didik dalam melaksanakan kegiatan ibadah sesuai agama dan kepercayaan masing-masing sebagai bentuk pembiasaan kehidupan spiritual."}, {"judul": "Pembiasaan ibadah berjamaah", "teks": "Mendampingi peserta didik dalam mengikuti kegiatan ibadah berjamaah serta memberikan arahan untuk meningkatkan kedisiplinan dan kesadaran dalam menjalankan ibadah."}, {"judul": "Pendampingan aktivitas harian", "teks": "Memberikan pendampingan kepada peserta didik dalam menjalankan rutinitas harian di lingkungan asrama agar terlaksana secara tertib dan teratur."}, {"judul": "Pemberian motivasi", "teks": "Memberikan motivasi dan penguatan positif kepada peserta didik agar memiliki semangat, rasa percaya diri, serta tanggung jawab dalam menjalankan aktivitas sehari-hari."}, {"judul": "Pembinaan perilaku", "teks": "Memberikan arahan dan pembinaan kepada peserta didik terkait perilaku sehari-hari guna membangun sikap saling menghargai, disiplin, dan bertanggung jawab."}, {"judul": "Pendampingan kegiatan belajar", "teks": "Memberikan pendampingan dan motivasi kepada peserta didik dalam mengikuti kegiatan belajar, memahami arahan, serta menyelesaikan tugas sesuai kebutuhan."}, {"judul": "Pendampingan kegiatan makan bersama", "teks": "Mendampingi peserta didik selama kegiatan makan bersama serta memberikan arahan terkait tata tertib dan pembiasaan perilaku positif."}]}, {"kode": "RHK 4", "judul": "Bimbingan spiritual dan emosional, penerapan disiplin, kesehatan, dan kegiatan belajar peserta didik", "fokus": "Spiritual, emosional, disiplin, kesehatan, dan kegiatan belajar", "tip": "Digunakan untuk pendampingan pada aspek spiritual dan emosional, pemantauan kesehatan, penerapan disiplin, atau dukungan kegiatan belajar sesuai aktivitas yang dilaksanakan.", "items": [{"judul": "Pendampingan peserta didik sakit", "teks": "Memberikan pendampingan kepada peserta didik yang mengalami gangguan kesehatan serta melakukan pemantauan kondisi dan membantu memenuhi kebutuhan selama masa pemulihan."}, {"judul": "Pemantauan kondisi kesehatan", "teks": "Melakukan pemantauan terhadap kondisi kesehatan peserta didik serta berkoordinasi dengan petugas terkait apabila ditemukan keluhan atau kondisi yang memerlukan penanganan lebih lanjut."}, {"judul": "Pendampingan pemeriksaan kesehatan", "teks": "Mendampingi peserta didik dalam menjalani pemeriksaan kesehatan serta membantu memastikan kebutuhan dan tindak lanjut pelayanan kesehatan terpenuhi."}, {"judul": "Pemberian obat sesuai arahan petugas", "teks": "Membantu mengawasi peserta didik dalam menjalankan anjuran konsumsi obat sesuai arahan petugas kesehatan."}, {"judul": "Edukasi perilaku hidup bersih dan sehat", "teks": "Memberikan edukasi kepada peserta didik mengenai pentingnya menjaga kesehatan, kebersihan diri, dan lingkungan guna mencegah timbulnya penyakit."}, {"judul": "Pembinaan kedisiplinan", "teks": "Memberikan arahan dan penguatan kepada peserta didik terkait kepatuhan terhadap tata tertib serta pembiasaan perilaku disiplin di lingkungan asrama."}, {"judul": "Pendampingan emosional", "teks": "Memberikan perhatian, dukungan, dan motivasi kepada peserta didik yang mengalami permasalahan emosional agar merasa nyaman dan mampu menjalankan aktivitas sehari-hari."}, {"judul": "Pemantauan kegiatan belajar", "teks": "Memantau kedisiplinan dan keterlibatan peserta didik dalam kegiatan belajar serta memberikan arahan untuk mendukung kelancaran proses pembelajaran."}]}, {"kode": "RHK 5", "judul": "Pendampingan peserta didik berkebutuhan khusus", "fokus": "Pendampingan individual", "tip": "Digunakan apabila dokumentasi memang menunjukkan pendampingan terhadap peserta didik berkebutuhan khusus.", "items": [{"judul": "Pendampingan aktivitas harian", "teks": "Memberikan pendampingan kepada peserta didik berkebutuhan khusus dalam melaksanakan aktivitas sehari-hari sesuai dengan kebutuhan dan kemampuan masing-masing."}, {"judul": "Pendampingan makan", "teks": "Membantu dan mendampingi peserta didik berkebutuhan khusus selama kegiatan makan sesuai dengan tingkat kebutuhan pendampingannya."}, {"judul": "Pendampingan kebersihan diri", "teks": "Memberikan arahan dan bantuan kepada peserta didik berkebutuhan khusus dalam menjaga kebersihan diri sesuai dengan kemampuan dan kebutuhannya."}, {"judul": "Pendampingan ibadah", "teks": "Mendampingi peserta didik berkebutuhan khusus dalam mengikuti kegiatan ibadah dengan memberikan arahan dan bantuan sesuai kebutuhan."}, {"judul": "Pemantauan kondisi kesehatan", "teks": "Melakukan pemantauan kondisi kesehatan peserta didik berkebutuhan khusus serta memberikan pendampingan sesuai kebutuhan dan berkoordinasi dengan petugas terkait."}, {"judul": "Pendampingan interaksi sosial", "teks": "Memberikan pendampingan kepada peserta didik berkebutuhan khusus dalam berinteraksi dengan teman sebaya serta membangun hubungan sosial yang positif di lingkungan asrama."}]}] };
+const PANDUAN = [["Anak sedang makan", "RHK 2 atau 3"], ["Anak sakit di kamar", "RHK 4"], ["Mengantar anak berobat", "RHK 4"], ["Anak sedang beribadah", "RHK 3"], ["Anak sedang bersih-bersih", "RHK 2"], ["Edukasi menjaga kebersihan", "RHK 2 atau 4"], ["Anak merapikan tempat tidur", "RHK 2"], ["Anak sedang belajar", "RHK 1 atau 4"], ["Memberikan motivasi anak", "RHK 3"], ["Memberikan arahan kedisiplinan", "RHK 3 atau 4"], ["Mendampingi anak berkebutuhan khusus", "RHK 5"]];
+const CATATAN_PANDUAN = "RHK 5 digunakan apabila memang ada peserta didik berkebutuhan khusus yang didampingi. Jangan mengklasifikasikan kegiatan yang sama ke beberapa RHK hanya untuk memenuhi target laporan.";
+const KET4 = 'Dokumentasi pelaksanaan tugas Wali Asuh dalam kegiatan [sebutkan kegiatan], berupa [uraikan pendampingan atau tindakan yang tampak pada foto] kepada peserta didik pada [hari/tanggal].';
+const WALI_ASRAMA_TPL = (() => {
+ const d = JSON.parse(JSON.stringify(DEFTPL));
+ const make = (judul,gambaran,maksud,ruang,kegiatan,hasil,kesimpulan,ket) => ({judul,gambaran,maksud,ruang,kegiatan,hasil,kesimpulan,ket});
+ const data = [
+  make('LAPORAN RENCANA KEGIATAN PEMBINAAN PENGHUNI ASRAMA DAN TATA TERTIB ASRAMA',
+   'Pengelolaan kehidupan asrama memerlukan perencanaan kegiatan pembinaan yang terarah serta tata tertib yang menjadi pedoman bagi seluruh penghuni asrama. Wali asrama berperan menyusun dan menyiapkan rencana kegiatan pembinaan serta ketentuan tata tertib agar pelaksanaan kehidupan asrama berlangsung tertib, aman, nyaman, dan mendukung perkembangan peserta didik.',
+   'Kegiatan ini dimaksudkan untuk menyusun dokumen rencana kegiatan pembinaan penghuni asrama dan tata tertib asrama. Tujuannya adalah menyediakan pedoman pelaksanaan pembinaan, memperjelas ketentuan yang perlu dipatuhi penghuni asrama, serta mendukung terciptanya lingkungan asrama yang tertib dan kondusif.',
+   'Ruang lingkup meliputi identifikasi kebutuhan pembinaan penghuni asrama, penyusunan rencana kegiatan, penetapan materi atau jadwal pembinaan, penyusunan atau peninjauan tata tertib, serta penyesuaian dokumen dengan ketentuan yang berlaku.',
+   'Wali asrama menyusun dan/atau memperbarui dokumen rencana kegiatan pembinaan penghuni asrama dan tata tertib asrama. Kegiatan meliputi [uraikan identifikasi kebutuhan, penyusunan agenda pembinaan, penentuan jadwal, penyusunan ketentuan, atau konsultasi/koordinasi yang benar-benar dilakukan]. Dokumen disusun dengan memperhatikan kebutuhan penghuni asrama dan ketentuan yang berlaku agar dapat digunakan sebagai pedoman pelaksanaan kegiatan.',
+   'Tersusun/terbarui dokumen [sebutkan nama dokumen] yang memuat [komponen utama]. Dokumen tersebut dapat digunakan sebagai acuan dalam pelaksanaan pembinaan penghuni dan penerapan tata tertib asrama.',
+   'Penyusunan rencana kegiatan pembinaan dan tata tertib asrama merupakan langkah penting untuk memastikan kegiatan pengasuhan dan pengelolaan asrama memiliki pedoman yang jelas. Dokumen yang disusun menjadi acuan pelaksanaan kegiatan sesuai ketentuan.',
+   'Menyusun/meninjau dokumen rencana kegiatan pembinaan penghuni asrama dan tata tertib asrama melalui [aktivitas yang tampak pada foto], sebagai upaya menyediakan pedoman pembinaan dan pengelolaan kehidupan asrama.'),
+  make('LAPORAN PEMELIHARAAN FASILITAS ASRAMA',
+   'Fasilitas asrama merupakan sarana penunjang yang digunakan penghuni untuk melaksanakan aktivitas sehari-hari. Kondisi fasilitas perlu dipantau dan dipelihara secara berkala agar tetap berfungsi, aman, dan layak digunakan. Wali asrama berperan melakukan pemantauan, pencatatan, serta koordinasi terkait kebutuhan pemeliharaan fasilitas asrama.',
+   'Kegiatan ini dimaksudkan untuk mendokumentasikan pelaksanaan pemeliharaan fasilitas asrama. Tujuannya adalah memastikan kondisi sarana dan prasarana terpantau, mengidentifikasi kerusakan atau kebutuhan perbaikan, serta mendukung kenyamanan dan keselamatan penghuni asrama.',
+   'Ruang lingkup meliputi pemeriksaan kondisi fasilitas, identifikasi kerusakan, pencatatan kebutuhan pemeliharaan, pelaporan, dan koordinasi tindak lanjut perbaikan fasilitas asrama.',
+   'Wali asrama melaksanakan pemantauan dan pendokumentasian kondisi fasilitas asrama. Kegiatan meliputi [sebutkan fasilitas yang diperiksa], mengidentifikasi [kondisi/kerusakan/kebutuhan perawatan], mencatat hasil pemantauan, serta menyampaikan atau mengoordinasikan kebutuhan tindak lanjut kepada [pihak terkait, jika dilakukan].',
+   'Terdokumentasinya kondisi fasilitas asrama berupa [sebutkan fasilitas dan hasil pemeriksaan]. Kebutuhan pemeliharaan atau perbaikan yang ditemukan telah [dicatat/dilaporkan/dikoordinasikan] untuk ditindaklanjuti sesuai kewenangan dan prosedur yang berlaku.',
+   'Pemantauan dan pendokumentasian pemeliharaan fasilitas asrama membantu memastikan kondisi sarana tetap terkontrol. Hasil pemantauan menjadi dasar untuk menentukan kebutuhan perawatan atau tindak lanjut.',
+   'Melaksanakan pemantauan/pemeliharaan fasilitas asrama pada [nama fasilitas] melalui [aktivitas yang tampak pada foto], guna menjaga fungsi, keamanan, dan kelayakan fasilitas bagi penghuni asrama.'),
+  make('LAPORAN PEMBINAAN PENGHUNI ASRAMA MELALUI KEGIATAN KEAGAMAAN DAN KETERAMPILAN HIDUP',
+   'Pembinaan penghuni asrama dilaksanakan untuk mendukung perkembangan sikap, kebiasaan positif, dan kemampuan hidup peserta didik. Kegiatan keagamaan dan keterampilan hidup menjadi bagian penting dalam membentuk karakter, tanggung jawab, kemandirian, serta kemampuan peserta didik menjalani kehidupan sehari-hari. Wali asrama berperan merencanakan, mendampingi, dan memantau pelaksanaan kegiatan pembinaan tersebut.',
+   'Kegiatan ini dimaksudkan untuk melaksanakan pembinaan penghuni asrama melalui kegiatan keagamaan dan keterampilan hidup. Tujuannya adalah membangun kebiasaan spiritual, meningkatkan keterampilan praktis, serta menumbuhkan sikap mandiri, disiplin, dan bertanggung jawab.',
+   'Ruang lingkup meliputi pendampingan kegiatan keagamaan sesuai agama dan kepercayaan masing-masing, pembiasaan perilaku positif, serta pelatihan keterampilan hidup seperti [kebersihan diri, pengelolaan barang pribadi, keterampilan rumah tangga, komunikasi, atau keterampilan lain yang dilaksanakan].',
+   'Wali asrama melaksanakan pembinaan penghuni asrama melalui kegiatan keagamaan dan/atau keterampilan hidup. Kegiatan meliputi [uraikan nama kegiatan], dengan memberikan arahan, contoh, pendampingan, dan pemantauan sesuai kebutuhan peserta didik. Pelaksanaan kegiatan diarahkan untuk membangun kebiasaan positif, kemandirian, dan tanggung jawab dalam kehidupan asrama.',
+   'Penghuni asrama mendapatkan pembinaan melalui kegiatan [nama kegiatan]. Kegiatan terlaksana dengan [uraikan partisipasi atau hasil yang benar-benar teramati], serta memberikan kesempatan kepada peserta didik untuk mengembangkan kebiasaan spiritual dan/atau keterampilan hidup.',
+   'Pembinaan melalui kegiatan keagamaan dan keterampilan hidup merupakan bagian dari upaya membentuk karakter dan kemandirian penghuni asrama. Kegiatan perlu dilaksanakan secara terarah dan berkelanjutan sesuai kebutuhan peserta didik.',
+   'Melaksanakan pembinaan penghuni asrama melalui kegiatan [keagamaan/keterampilan hidup] berupa [aktivitas yang tampak pada foto], untuk mendukung pembiasaan spiritual, kemandirian, dan keterampilan dalam kehidupan sehari-hari.'),
+  make('LAPORAN PENERAPAN DISIPLIN DAN PELAKSANAAN TATA TERTIB ASRAMA',
+   'Tata tertib asrama menjadi pedoman dalam mengatur kehidupan bersama serta membangun lingkungan yang aman, tertib, dan kondusif. Penerapan disiplin membutuhkan arahan, pengawasan, pencatatan, dan evaluasi secara berkala. Wali asrama berperan memastikan penghuni memahami dan melaksanakan ketentuan yang berlaku serta menindaklanjuti pelanggaran atau kendala sesuai prosedur.',
+   'Kegiatan ini dimaksudkan untuk mendokumentasikan penerapan disiplin dan pelaksanaan tata tertib asrama. Tujuannya adalah meningkatkan kepatuhan penghuni terhadap ketentuan, membangun kebiasaan disiplin, serta menjadi bahan evaluasi terhadap pelaksanaan tata tertib.',
+   'Ruang lingkup meliputi sosialisasi dan penguatan tata tertib, pemantauan kepatuhan penghuni, pencatatan kejadian atau pelanggaran, pemberian arahan, koordinasi tindak lanjut, serta evaluasi penerapan disiplin asrama.',
+   'Wali asrama melaksanakan pemantauan dan penguatan penerapan disiplin serta tata tertib asrama. Kegiatan meliputi [uraikan bentuk pengawasan, pengarahan, pemeriksaan, pencatatan kejadian, atau tindak lanjut]. Apabila ditemukan ketidaksesuaian, wali asrama memberikan arahan dan melakukan koordinasi sesuai ketentuan yang berlaku.',
+   'Terlaksananya pemantauan penerapan tata tertib asrama pada [waktu/kegiatan/area]. Hasil pemantauan menunjukkan [uraikan kondisi atau temuan faktual], dan tindak lanjut yang dilakukan berupa [arahan/pencatatan/koordinasi/evaluasi, jika ada].',
+   'Penerapan disiplin dan tata tertib asrama memerlukan pengawasan dan evaluasi secara berkala. Dokumentasi kegiatan menjadi bahan pemantauan untuk menjaga ketertiban serta meningkatkan kepatuhan penghuni terhadap ketentuan.',
+   'Melaksanakan pemantauan dan penerapan tata tertib asrama melalui [aktivitas yang tampak pada foto], disertai arahan/penguatan kepada penghuni untuk membangun perilaku disiplin dan tertib.'),
+  make('LAPORAN PELAKSANAAN TUGAS DAN KEWAJIBAN WALI ASRAMA KEPADA KEPALA SEKOLAH',
+   'Pelaksanaan tugas wali asrama mencakup pengelolaan, pemantauan, pembinaan, dan koordinasi kegiatan kehidupan asrama. Pelaksanaan tugas tersebut perlu didokumentasikan dan dilaporkan kepada Kepala Sekolah secara lengkap dan tepat waktu sebagai bentuk pertanggungjawaban serta bahan pemantauan penyelenggaraan pengasuhan dan pengelolaan asrama.',
+   'Kegiatan ini dimaksudkan untuk menyusun dan menyampaikan laporan pelaksanaan tugas serta kewajiban wali asrama kepada Kepala Sekolah. Tujuannya adalah memberikan informasi mengenai pelaksanaan kegiatan, kondisi penghuni dan fasilitas asrama, kendala yang dihadapi, serta tindak lanjut yang telah dilakukan.',
+   'Ruang lingkup meliputi pengumpulan data kegiatan, rekapitulasi pelaksanaan tugas, pencatatan kondisi dan kejadian penting, penyusunan laporan, pemeriksaan kelengkapan, serta penyampaian laporan kepada Kepala Sekolah sesuai jadwal.',
+   'Wali asrama menyusun laporan pelaksanaan tugas dan kewajiban untuk disampaikan kepada Kepala Sekolah. Kegiatan meliputi [uraikan data/kegiatan yang direkap], menyusun uraian pelaksanaan tugas, mencatat kendala dan tindak lanjut, serta memeriksa kelengkapan laporan sebelum [disampaikan/dikoordinasikan] kepada Kepala Sekolah.',
+   'Tersusun laporan pelaksanaan tugas wali asrama periode [periode laporan] yang memuat [ringkasan isi laporan]. Laporan telah [disampaikan/disiapkan untuk disampaikan] kepada Kepala Sekolah pada [tanggal, jika ada].',
+   'Penyusunan dan penyampaian laporan merupakan bentuk pertanggungjawaban pelaksanaan tugas wali asrama. Laporan yang lengkap dan tepat waktu mendukung pemantauan serta evaluasi pengelolaan kehidupan asrama.',
+   'Menyusun/menyampaikan laporan pelaksanaan tugas dan kewajiban wali asrama periode [periode] melalui [aktivitas yang tampak pada foto], sebagai bentuk dokumentasi dan pertanggungjawaban kepada Kepala Sekolah.'),
+  make('LAPORAN KOORDINASI DENGAN KOORDINATOR ASRAMA',
+   'Pelaksanaan kegiatan asrama membutuhkan koordinasi antara wali asrama dan koordinator asrama yang merupakan peserta didik yang diberikan tanggung jawab secara berkala. Koordinasi diperlukan untuk menyampaikan informasi, memantau pelaksanaan tugas, mengidentifikasi kebutuhan atau kendala, serta membangun komunikasi dan tanggung jawab dalam pengelolaan kehidupan asrama.',
+   'Kegiatan ini dimaksudkan untuk mendokumentasikan koordinasi wali asrama dengan koordinator asrama. Tujuannya adalah memastikan informasi dan arahan tersampaikan, mendukung pelaksanaan tanggung jawab koordinator asrama, serta memperoleh masukan mengenai kondisi dan kebutuhan penghuni asrama.',
+   'Ruang lingkup meliputi komunikasi dan koordinasi berkala, penyampaian arahan, pembahasan kegiatan dan tata tertib, penerimaan informasi atau laporan dari koordinator asrama, serta pencatatan hasil koordinasi dan tindak lanjut.',
+   'Wali asrama melaksanakan koordinasi dengan koordinator asrama melalui [pertemuan/percakapan langsung/pengarahan/penyampaian laporan]. Pembahasan meliputi [topik koordinasi], penyampaian informasi dan arahan terkait tanggung jawab koordinator, serta identifikasi kendala atau kebutuhan yang perlu ditindaklanjuti. Hasil koordinasi dicatat atau ditindaklanjuti sesuai kebutuhan.',
+   'Terlaksananya koordinasi dengan koordinator asrama mengenai [topik]. Melalui kegiatan tersebut diperoleh informasi berupa [hasil pembahasan/masukan/kendala], serta kesepakatan atau tindak lanjut berupa [uraikan jika ada].',
+   'Koordinasi berkala dengan koordinator asrama mendukung kelancaran komunikasi dan pelaksanaan tanggung jawab di lingkungan asrama. Hasil koordinasi menjadi bahan pemantauan dan tindak lanjut sesuai kebutuhan.',
+   'Melaksanakan koordinasi dengan koordinator asrama terkait [topik pembahasan] melalui [aktivitas yang tampak pada foto], guna mendukung komunikasi, pemantauan, dan pelaksanaan tanggung jawab di lingkungan asrama.')
+ ];
+ const keys=['judul','gambaran','maksud','ruang','kegiatan','hasil','kesimpulan','ket'];
+ d.nar={}; keys.forEach(k=>d.nar[k]=data.map((x,i)=>({l:'RHK '+(i+1),t:x[k]})));
+ d.keg=[
+  'RHK 1. Penyusunan rencana pembinaan penghuni asrama dan tata tertib',
+  'RHK 2. Pemeriksaan dan pemeliharaan fasilitas asrama',
+  'RHK 3. Pembinaan keagamaan penghuni asrama',
+  'RHK 3. Pembinaan keterampilan hidup penghuni asrama',
+  'RHK 4. Pemantauan kedisiplinan dan tata tertib asrama',
+  'RHK 5. Penyusunan dan penyampaian laporan kepada Kepala Sekolah',
+  'RHK 6. Koordinasi dengan koordinator asrama'
+ ];
+ d.rhk=[
+  {kode:'RHK 1',judul:'Rencana pembinaan penghuni dan tata tertib asrama',fokus:'Perencanaan pembinaan dan tata tertib',tip:'Untuk penyusunan atau peninjauan dokumen rencana kegiatan pembinaan dan tata tertib asrama.',items:[{judul:'Penyusunan rencana pembinaan',teks:'Menyusun rencana kegiatan pembinaan penghuni asrama berdasarkan kebutuhan dan kondisi lingkungan asrama.'},{judul:'Penyusunan tata tertib',teks:'Menyusun atau meninjau ketentuan tata tertib asrama sebagai pedoman bagi seluruh penghuni.'}]},
+  {kode:'RHK 2',judul:'Pemeliharaan fasilitas asrama',fokus:'Pemeriksaan dan perawatan fasilitas',tip:'Untuk pemeriksaan, pencatatan kerusakan, perawatan, atau koordinasi perbaikan fasilitas.',items:[{judul:'Pemeriksaan fasilitas',teks:'Melakukan pemeriksaan kondisi fasilitas asrama untuk memastikan fungsi, keamanan, dan kelayakan penggunaannya.'},{judul:'Pencatatan kebutuhan perbaikan',teks:'Mencatat kerusakan atau kebutuhan pemeliharaan fasilitas dan menyampaikan informasi kepada pihak terkait.'}]},
+  {kode:'RHK 3',judul:'Pembinaan keagamaan dan keterampilan hidup',fokus:'Pembinaan penghuni asrama',tip:'Untuk kegiatan keagamaan dan keterampilan hidup yang benar-benar dilaksanakan.',items:[{judul:'Pembinaan keagamaan',teks:'Mendampingi penghuni asrama dalam kegiatan keagamaan sesuai agama dan kepercayaan masing-masing.'},{judul:'Pembinaan keterampilan hidup',teks:'Memberikan arahan dan pendampingan dalam kegiatan keterampilan hidup untuk mendukung kemandirian penghuni asrama.'}]},
+  {kode:'RHK 4',judul:'Penerapan disiplin dan tata tertib asrama',fokus:'Pengawasan dan evaluasi disiplin',tip:'Untuk penguatan tata tertib, pemantauan kepatuhan, pencatatan kejadian, dan evaluasi.',items:[{judul:'Pemantauan tata tertib',teks:'Melakukan pemantauan terhadap kepatuhan penghuni asrama dalam melaksanakan tata tertib yang berlaku.'},{judul:'Penguatan kedisiplinan',teks:'Memberikan arahan dan penguatan kepada penghuni asrama terkait perilaku disiplin dan kepatuhan terhadap ketentuan.'}]},
+  {kode:'RHK 5',judul:'Pelaporan tugas dan kewajiban wali asrama',fokus:'Dokumentasi dan pertanggungjawaban',tip:'Untuk rekapitulasi, penyusunan, pemeriksaan, dan penyampaian laporan kepada Kepala Sekolah.',items:[{judul:'Rekapitulasi kegiatan',teks:'Mengumpulkan dan merekap data pelaksanaan tugas serta kegiatan pengelolaan asrama.'},{judul:'Penyusunan laporan',teks:'Menyusun laporan pelaksanaan tugas wali asrama secara lengkap dan tepat waktu untuk disampaikan kepada Kepala Sekolah.'}]},
+  {kode:'RHK 6',judul:'Koordinasi dengan koordinator asrama',fokus:'Koordinasi berkala',tip:'Untuk komunikasi, pengarahan, dan pembahasan pelaksanaan tanggung jawab koordinator asrama.',items:[{judul:'Penyampaian arahan',teks:'Menyampaikan arahan kepada koordinator asrama terkait pelaksanaan tanggung jawab dan kegiatan penghuni asrama.'},{judul:'Koordinasi dan tindak lanjut',teks:'Melaksanakan koordinasi mengenai kondisi, kebutuhan, dan kendala di lingkungan asrama serta membahas tindak lanjut yang diperlukan.'}]}
+ ];
+ return d;
+})();
+
+const DEF = {
+  font: 'Arial', fs: 11, page: 'a4', orient: 'portrait', rhk: '', shift: 'pagi', auto: true, ctlMode: 'kop', showSasaran: true, showMasalah: true, sasaran: '', masalah: '',
+  kop: { logo: 90, L: '', R: '', lines: [
+    { t: 'KEMENTERIAN SOSIAL REPUBLIK INDONESIA', s: 12, b: 1 },
+    { t: 'PUSAT PENDIDIKAN, PELATIHAN, DAN PENGEMBANGAN PROFESI', s: 12, b: 1 },
+    { t: 'KESEJAHTERAAN SOSIAL', s: 12, b: 1 },
+    { t: 'SEKOLAH RAKYAT TERINTEGRASI 1 CILACAP', s: 14, b: 1 },
+    { t: 'Jl. Cigobang, Desa Jenang, Kecamatan Majenang, Kabupaten Cilacap, Jawa Tengah, 53257', s: 9, b: 1 },
+    { t: 'Website: https://sekolahrakyat.kemensos.go.id', s: 9, b: 0 }
+  ] },
+  judul: 'LAPORAN BIMBINGAN SPIRITUAL DAN EMOSIONAL, PENERAPAN DISIPLIN, KESEHATAN, DAN KEGIATAN BELAJAR PESERTA DIDIK SESUAI DENGAN KETENTUAN',
+  sec: [
+    { t: 'Identitas Pegawai', items: [
+      { t: 'kv', k: 'nama', l: 'Nama', v: 'Nama Lengkap, Gelar' },
+      { t: 'kv', k: 'nip', l: 'NIPPPPK', v: '000000000000000000' },
+      { t: 'kv', k: 'jabatan', l: 'Jabatan', v: 'Penata Layanan Operasional – Wali Asuh' } ] },
+    { t: 'Pendahuluan', items: [
+      { t: 'sub', f: 'gambaran', j: 'Gambaran Umum', x: 'Pilih RHK di toolbar (🎯 Pilih RHK) untuk mengisi bagian ini otomatis, atau klik 📋 Template di paragraf ini.' },
+      { t: 'sub', f: 'maksud', j: 'Maksud dan Tujuan', x: '' },
+      { t: 'sub', f: 'ruang', j: 'Ruang Lingkup', x: '' } ] },
+    { t: 'Waktu Pelaksanaan', items: [
+      { t: 'kv', k: 'hari', l: 'Hari, tanggal', v: hariLabel(todayS) },
+      { t: 'kv', k: 'waktu', l: 'Waktu', v: waktuTxt('pagi') } ] },
+    { t: 'Kegiatan yang Dilaksanakan', items: [{ t: 'p', f: 'kegiatan', x: '' }] },
+    { t: 'Hasil yang Dicapai', items: [{ t: 'p', f: 'hasil', x: '' }] },
+    { t: 'Kesimpulan', items: [{ t: 'p', f: 'kesimpulan', x: '' }] },
+    { t: 'Penutup', items: [{ t: 'p', x: 'Demikian laporan ini disusun sebagai dokumentasi pelaksanaan tugas Wali Asuh pada kegiatan [sebutkan kegiatan] di lingkungan Sekolah Rakyat. Laporan ini diharapkan dapat menjadi bahan pemantauan dan evaluasi pelaksanaan pendampingan peserta didik.' }] }
+  ],
+  ttd: { tempat: 'Cilacap', tgl: tglLabel(todayS), pre: '', nama: 'Nama Lengkap, Gelar', nip: '000000000000000000', img: '', x: 30, y: 14, w: 140, mul: true, al: 'r', bw: 270, sp: 80, dx: 0, dy: 0 },
+  lamp: { judul: 'LAMPIRAN', sub: 'RINCIAN KEGIATAN', dok: 'DOKUMENTASI', kop: true, cols: 3, mode: 'contain', h: 145, foto: [], ket: KET4 },
+  rows: null, tpl: null
+};
+
+let S, tmr;
+function load() {
+  const d = JSON.parse(JSON.stringify(DEF));
+  let sv = null;
+  try { sv = JSON.parse(localStorage.getItem(KEY)); } catch (e) {}
+  S = Object.assign(d, sv || {});
+  ['kop', 'ttd', 'lamp'].forEach(k => S[k] = Object.assign({}, DEF[k], (sv || {})[k] || {}));
+  if (S.ttd.nama === 'NAMA LENGKAP, GELAR') S.ttd.nama = 'Nama Lengkap, Gelar';
+  ensure();
+}
+function guessF(s, it) {
+  const t = (s.t || '').toLowerCase(), j = (it.j || '').toLowerCase();
+  if (it.t === 'sub') return j.includes('gambaran') ? 'gambaran' : j.includes('maksud') ? 'maksud' : j.includes('ruang') ? 'ruang' : '';
+  if (it.t === 'p') return t.includes('kegiatan') ? 'kegiatan' : t.includes('hasil') ? 'hasil' : t.includes('kesimpulan') ? 'kesimpulan' : '';
+  return '';
+}
+function ensure() {
+  S.sec.forEach(s => s.items.forEach(it => { if (it.t !== 'kv' && !it.f) it.f = guessF(s, it); }));
+  if (!Array.isArray(S.rows)) S.rows = [mkRow(todayS)];
+  S.rows.forEach(r => { if (!r.id) r.id = uid(); ['date', 'shift', 'keg', 'rinc'].forEach(k => { if (r[k] == null) r[k] = ''; }); });
+  const D = JSON.parse(JSON.stringify(DEFTPL));
+  if (!S.tpl || typeof S.tpl !== 'object') S.tpl = D;
+  if (!S.role) S.role = 'waliAsuh';
+  if (!S.roleTpls || typeof S.roleTpls !== 'object') S.roleTpls = {};
+  if (!S.roleTpls.waliAsuh) S.roleTpls.waliAsuh = JSON.parse(JSON.stringify(S.role === 'waliAsuh' ? S.tpl : DEFTPL));
+  if (!S.roleTpls.waliAsrama) S.roleTpls.waliAsrama = JSON.parse(JSON.stringify(WALI_ASRAMA_TPL));
+  if (!S.roleTpls[S.role]) S.roleTpls[S.role] = JSON.parse(JSON.stringify(S.role === 'waliAsrama' ? WALI_ASRAMA_TPL : DEFTPL));
+  S.tpl = S.roleTpls[S.role];
+  if (!S.tpl.nar) S.tpl.nar = D.nar;
+  FIELDS.forEach(([f]) => { if (!Array.isArray(S.tpl.nar[f])) S.tpl.nar[f] = D.nar[f]; });
+  if (!Array.isArray(S.tpl.keg)) S.tpl.keg = D.keg;
+  if (!S.tpl.optional || typeof S.tpl.optional !== 'object') S.tpl.optional = { sasaran: 'Peserta didik/kelompok yang menjadi sasaran pendampingan pada jadwal tugas.', masalah: 'Temuan: [tuliskan temuan jika ada].\nTindak lanjut: [uraikan tindakan atau koordinasi yang dilakukan].' };
+  if (typeof S.tpl.optional.sasaran !== 'string') S.tpl.optional.sasaran = ''; if (typeof S.tpl.optional.masalah !== 'string') S.tpl.optional.masalah = '';
+  if (!Array.isArray(S.tpl.rhk)) S.tpl.rhk = D.rhk;
+  S.tpl.rhk.forEach(g => { if (!Array.isArray(g.items)) g.items = []; });
+  if (typeof S.showSasaran !== 'boolean') S.showSasaran = true; if (typeof S.showMasalah !== 'boolean') S.showMasalah = true;
+  if (typeof S.sasaran !== 'string') S.sasaran = ''; if (typeof S.masalah !== 'string') S.masalah = '';
+  if (!['show', 'kop', 'all'].includes(S.ctlMode)) S.ctlMode = 'kop';
+  if (!PG[S.page]) S.page = 'a4';
+  if (S.orient !== 'landscape') S.orient = 'portrait';
+  if (!SHIFT3[S.shift]) S.shift = 'pagi';
+  if (S.lamp.judul === 'LAMPIRAN DOKUMENTASI') S.lamp.judul = 'LAMPIRAN';
+}
+function save() {
+  try { if (S && S.role && S.tpl) S.roleTpls[S.role] = JSON.parse(JSON.stringify(S.tpl)); localStorage.setItem(KEY, JSON.stringify(S)); $('warn').style.display = 'none'; }
+  catch (e) { $('warn').style.display = 'block'; }
+}
+function sv() { clearTimeout(tmr); tmr = setTimeout(save, 400); }
+const esc = s => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+function getPath(p) { return p.split('.').reduce((o, k) => o == null ? o : o[k], S); }
+function setPath(p, v) {
+  const a = p.split('.'); let o = S;
+  for (let i = 0; i < a.length - 1; i++) o = o[a[i]];
+  o[a[a.length - 1]] = v;
+}
+const Bt = (l, c) => `<button onclick="${c}">${l}</button>`;
+function pageDim() { const d = PG[S.page] || PG.a4; return S.orient === 'portrait' ? [d[1], d[0]] : [d[0], d[1]]; }
+
+// ---------- baris lampiran ----------
+let uidN = 0;
+const uid = () => 'r' + Date.now().toString(36) + (uidN++).toString(36) + Math.random().toString(36).slice(2, 5);
+function kegDefault() {
+  if (!S.rhk) return '';
+  return (S.tpl.keg || []).find(x => x.startsWith(S.rhk + '.')) || '';
+}
+function mkRow(date, o) {
+  o = o || {};
+  return { id: uid(), date: date || '', tgl: null, shift: o.shift != null ? o.shift : (S && S.shift) || 'pagi', shiftTxt: null, keg: o.keg != null ? o.keg : (S && S.tpl ? kegDefault() : ''), rinc: o.rinc || '' };
+}
+
+// ---------- render ----------
+function kopHTML(ro) {
+  const k = S.kop, z = k.logo;
+  const logo = side => ro
+    ? `<td style="width:${z + 12}px;text-align:center;vertical-align:middle">${k[side] ? `<img src="${k[side]}" style="width:${z}px;height:auto">` : ''}</td>`
+    : `<td style="width:${z + 12}px;text-align:center;vertical-align:middle">${k[side]
+      ? `<img src="${k[side]}" style="width:${z}px;height:auto"><div class="no-print mini"><a onclick="pilihLogo('${side}')">ganti</a> · <a onclick="hapusLogo('${side}')">hapus</a></div>`
+      : `<div class="ph no-print" onclick="pilihLogo('${side}')" style="width:${z}px;height:${z}px">+ logo<br>${side === 'L' ? 'kiri' : 'kanan'}</div>`}</td>`;
+  const lines = k.lines.map((l, i) => ro
+    ? `<div class="kl" style="font-size:${l.s}pt;font-weight:${l.b ? 700 : 400}">${esc(l.t)}</div>`
+    : `<div class="kl row" style="font-size:${l.s}pt;font-weight:${l.b ? 700 : 400}"><span ${CE} data-p="kop.lines.${i}.t" data-ph="Baris kop">${esc(l.t)}</span><span class="ctl no-print">${Bt('A−', `kopLine(${i},'-')`)}${Bt('A+', `kopLine(${i},'+')`)}${Bt('B', `kopLine(${i},'b')`)}${Bt('▲', `kopLine(${i},'up')`)}${Bt('▼', `kopLine(${i},'dn')`)}${Bt('🗑', `kopLine(${i},'x')`)}</span></div>`).join('');
+  return `<table style="width:100%;border-collapse:collapse"><tr>${logo('L')}<td style="vertical-align:middle;padding:0 4px">${lines}</td>${k.R ? logo('R') : (ro && k.L ? `<td style="width:${z + 12}px"></td>` : '')}</tr></table><div class="kopline"></div>`;
+}
+function toggleOptional(which) { const key = which === 'sasaran' ? 'showSasaran' : 'showMasalah'; S[key] = !S[key]; save(); draw(); }
+function applyOptionalTpl(which) {
+  const txt = which === 'sasaran' ? (S.tpl.optional?.sasaran || '') : (S.tpl.optional?.masalah || '');
+  if (!txt.trim()) { toast('Template belum diisi. Klik “Edit Template” untuk membuatnya.'); bukaTm('optional'); return; }
+  if (S[which] && S[which].trim() && !confirm('Ganti isi kolom ini dengan template?')) return;
+  S[which] = txt; save(); draw(); toast('Template berhasil dimasukkan. Silakan edit teks langsung pada laporan.');
+}
+function editOptionalTpl(which) { bukaTm('optional'); }
+function clearOptional(which) {
+  const label = which === 'sasaran' ? 'Sasaran Pendampingan' : 'Permasalahan/Temuan dan Tindak Lanjut';
+  if (!confirm('Hapus seluruh isi kolom “' + label + '”?')) return;
+  S[which] = ''; save(); draw(); toast('Isi kolom berhasil dihapus.');
+}
+function secHTML(s, si) {
+  let kn = 0, sn = 0;
+  const L = String.fromCharCode(65 + (si % 26));
+  const items = s.items.map((it, ii) => {
+    const b = `sec.${si}.items.${ii}`;
+    const tpb = it.f ? `<button class="tplbtn t" onclick="openNar('${it.f}','${b}.x',event)">📋 Template</button>` : '';
+    const c = `<span class="ctl no-print">${tpb}${Bt('▲', `itOp(${si},${ii},'up')`)}${Bt('▼', `itOp(${si},${ii},'dn')`)}${Bt('🗑', `itOp(${si},${ii},'x')`)}</span>`;
+    if (it.t === 'kv') {
+      const sel = it.k === 'waktu' ? `<select class="sh no-print" onchange="setShift(this.value)" title="Pilih shift">${['pagi', 'siang', 'malam'].map(k => `<option value="${k}"${S.shift === k ? ' selected' : ''}>${shiftLabel(k)}</option>`).join('')}</select>` : '';
+      return `<div class="it row"><table class="kv"><tr><td class="n">${++kn}.</td><td class="l"><span ${CE} data-p="${b}.l" data-ph="Label">${esc(it.l)}</span></td><td class="c">:</td><td><span class="v" ${CE} data-p="${b}.v" data-ph="Isi">${esc(it.v)}</span>${sel}</td></tr></table>${c}</div>`;
+    }
+    if (it.t === 'sub') return `<div class="it row"><table class="kv"><tr><td class="n"><b>${++sn}.</b></td><td><b ${CE} data-p="${b}.j" data-ph="Sub-judul">${esc(it.j)}</b></td></tr></table><div class="p" ${CE} data-p="${b}.x" data-ph="Tulis uraian...">${esc(it.x)}</div>${c}</div>`;
+    return `<div class="it row"><div class="p" ${CE} data-p="${b}.x" data-ph="Tulis paragraf...">${esc(it.x)}</div>${c}</div>`;
+  }).join('');
+  const extra = '';
+  return `<div class="sec"><div class="row"><table class="kv hd"><tr><td class="n"><b>${L}.</b></td><td><b ${CE} data-p="sec.${si}.t" data-ph="Judul bagian">${esc(s.t)}</b></td></tr></table><span class="ctl no-print">${Bt('▲', `secOp(${si},'up')`)}${Bt('▼', `secOp(${si},'dn')`)}${Bt('🗑 bagian', `secOp(${si},'x')`)}</span></div>${items}${extra}<div class="add no-print">${Bt('+ Paragraf', `secOp(${si},'p')`)}${Bt('+ Sub-judul', `secOp(${si},'sub')`)}${Bt('+ Baris (label : isi)', `secOp(${si},'kv')`)}</div></div>`;
+}
+function ttdHTML() {
+  const t = S.ttd;
+  const m = t.al === 'l' ? '18px 0 0 0' : t.al === 'c' ? '18px auto 0' : '18px 0 0 auto';
+  const sg = t.img ? `<div class="sg" style="left:${t.x}px;top:${t.y}px;width:${t.w}px"><img src="${t.img}" draggable="false" style="width:100%;height:auto;display:block;${t.mul ? 'mix-blend-mode:multiply' : ''}"><span class="rz no-print"></span></div>` : '';
+  const al = t.al === 'l' ? 'left' : t.al === 'c' ? 'center' : 'right';
+  return `<div class="tw" style="width:${t.bw}px;margin:${m};text-align:${al};transform:translate(${t.dx||0}px,${t.dy||0}px)"><div class="no-print" style="height:0"></div><div ${CE} data-p="ttd.pre" data-ph="(baris opsional, mis. Mengetahui,)">${esc(t.pre)}</div><div><span ${CE} data-p="ttd.tempat" data-ph="Kota">${esc(t.tempat)}</span>, <span ${CE} data-p="ttd.tgl" data-ph="Tanggal">${esc(t.tgl)}</span></div><div class="ttd-space" style="height:${t.sp}px"></div><div style="font-weight:700;text-decoration:underline" ${CE} data-p="ttd.nama" data-ph="Nama pelapor, dapat memakai gelar">${esc(t.nama)}</div><div>NIP. <span ${CE} data-p="ttd.nip" data-ph="NIP">${esc(t.nip)}</span></div>${sg}</div>`;
+}
+function tabelHTML() {
+  const tp = (i, f) => `<span class="ctl no-print"><button class="tplbtn t" onclick="openTpl(${i},'${f}',event)">📋 Template</button></span>`;
+  const rows = S.rows.map((r, i) => {
+    const tgl = r.tgl != null ? r.tgl : (r.date ? hariLabel(r.date) : '');
+    const stx = r.shiftTxt != null ? r.shiftTxt : shiftLabel(r.shift);
+    return `<tr><td class="row dc"><input type="date" class="dti no-print" value="${esc(r.date)}" onchange="rowDate(${i},this.value)"><select class="dti no-print" onchange="rowShift(${i},this.value)"><option value="">Pilih shift...</option>${SHIFTS.map(x => `<option value="${x[0]}"${r.shift === x[0] ? ' selected' : ''}>${esc(x[1])}</option>`).join('')}</select><span class="pl" ${CE} data-p="rows.${i}.tgl" data-ph="Hari, tanggal">${esc(tgl)}</span><div class="pl" ${CE} data-p="rows.${i}.shiftTxt" data-ph="Shift">${esc(stx)}</div><span class="ctl no-print">${Bt('▲', `rowOp(${i},'up')`)}${Bt('▼', `rowOp(${i},'dn')`)}${Bt('➕', `rowOp(${i},'add')`)}${Bt('🗑', `rowOp(${i},'x')`)}</span></td><td class="row"><div class="pl" ${CE} data-ml data-p="rows.${i}.keg" data-ph="Kegiatan">${esc(r.keg)}</div>${tp(i, 'keg')}</td><td class="row"><div class="pl" ${CE} data-ml data-p="rows.${i}.rinc" data-ph="Rincian kegiatan">${esc(r.rinc)}</div>${tp(i, 'rinc')}</td></tr>`;
+  }).join('');
+  const empty = S.rows.length ? '' : '<tr class="no-print"><td colspan="3" style="text-align:center;color:#94a3b8;padding:14px">Belum ada baris. Klik “+ Tambah baris”.</td></tr>';
+  return `<table class="tb1"><colgroup><col style="width:22%"><col style="width:30%"><col style="width:48%"></colgroup><thead><tr><th>Hari, Tanggal</th><th>Kegiatan</th><th>Rincian Kegiatan</th></tr></thead><tbody>${rows}${empty}</tbody></table><div class="no-print" style="margin:6px 0"><button class="add2" onclick="tambahBaris(1)">+ Tambah baris di bawah (tanggal berikutnya)</button></div>`;
+}
+function lampHTML() {
+  const L = S.lamp, n = L.cols;
+  const sty = L.mode === 'asli' ? 'width:100%;height:auto' : L.mode === 'cover' ? `width:100%;height:${L.h}px;object-fit:cover` : `max-width:100%;max-height:${L.h}px`;
+  let rows = '';
+  for (let i = 0; i < L.foto.length; i += n) {
+    let tds = '';
+    for (let j = 0; j < n; j++) {
+      const k = i + j, f = L.foto[k];
+      tds += f ? `<td class="row"><div class="gb" style="${L.mode === 'contain' ? `height:${L.h}px` : ''}"><img src="${f.s}" style="${sty}"></div><div class="cap" ${CE} data-p="lamp.foto.${k}.c" data-ph="Keterangan foto (opsional)">${esc(f.c || '')}</div><span class="ctl no-print">${Bt('◀', `fotoOp(${k},'l')`)}${Bt('▶', `fotoOp(${k},'r')`)}${Bt('✕', `fotoOp(${k},'x')`)}</span></td>` : '<td></td>';
+    }
+    rows += `<tr>${tds}</tr>`;
+  }
+  const col = Array(n).fill(`<col style="width:${100 / n}%">`).join('');
+  const gal = L.foto.length ? `<table class="gal"><colgroup>${col}</colgroup>${rows}</table>` : '<div class="no-print" style="text-align:center;color:#94a3b8;border:1px dashed #cbd5e1;padding:30px;font-size:12px">Belum ada foto. Klik “+ Tambah foto” (bisa pilih banyak sekaligus).</div>';
+  return `<div class="pg no-print">— halaman baru (lampiran) —</div><div class="lamp">${L.kop ? kopHTML(false) : ''}<div class="jd"><span ${CE} data-p="lamp.judul" data-ph="Judul lampiran">${esc(L.judul)}</span></div><div class="lh" ${CE} data-p="lamp.sub" data-ph="Judul tabel kegiatan">${esc(L.sub)}</div>${tabelHTML()}<div class="lh" style="margin-top:14px" ${CE} data-p="lamp.dok" data-ph="Judul dokumentasi">${esc(L.dok)}</div><div class="no-print" style="margin:2px 0"><button class="add2" onclick="$('fFoto').click()">+ Tambah foto</button></div>${gal}<div class="row"><div class="ket" ${CE} data-p="lamp.ket" data-ph="Keterangan dokumentasi">${esc(L.ket)}</div><span class="ctl no-print"><button class="tplbtn t" onclick="openNar('ket','lamp.ket',event)">📋 Template</button></span></div></div>`;
+}
+function secsHTML() {
+  const a = S.sec.map(secHTML), last = a.pop() || '';
+  const add = `<div class="no-print" style="margin:8px 0 0 36px"><button class="b l" onclick="addSec()">+ Tambah Bagian</button></div>`;
+  return a.join('') + `<div style="break-inside:avoid">${last}${add}${ttdHTML()}</div>`;
+}
+function render() {
+  doc.style.fontFamily = `'${S.font}',Arial,sans-serif`;
+  doc.style.fontSize = S.fs + 'pt';
+  const [w, hh] = pageDim();
+  doc.style.width = w + 'mm';
+  doc.classList.toggle('hide-kopctl', S.ctlMode === 'kop' || S.ctlMode === 'all');
+  doc.classList.toggle('hide-allctl', S.ctlMode === 'all');
+  doc.style.setProperty('--maxh', (hh - 24 - 14) + 'mm');
+  $('pgst').textContent = `@page{size:${w}mm ${hh}mm;margin:12mm 15mm}`;
+  doc.innerHTML = kopHTML(false) + `<div class="jd row"><span ${CE} data-p="judul" data-ph="Judul laporan">${esc(S.judul)}</span><span class="ctl no-print"><button class="tplbtn t" onclick="openNar('judul','judul',event)">📋 Template</button></span></div>` + secsHTML() + lampHTML();
+  syncBar(); fitZoom();
+}
+function syncBar() {
+  $('fontSel').value = S.font; $('fsSel').value = String(S.fs);
+  $('ctlSel').value = S.ctlMode; $('pageSel').value = S.page; $('orientSel').value = S.orient;
+  $('rhkSel').value = S.rhk || ''; $('shiftSel').value = S.shift;
+  $('autoSort').checked = S.auto !== false; $('lampKop').checked = S.lamp.kop !== false;
+  $('ttdW').value = S.ttd.w; $('ttdSp').value = S.ttd.sp; $('ttdAl').value = S.ttd.al; $('ttdMul').checked = !!S.ttd.mul;
+  $('ttdX').value = S.ttd.dx || 0; $('ttdY').value = S.ttd.dy || 0; $('roleSel').value = S.role || 'waliAsuh';
+  $('logoSz').value = S.kop.logo; $('colsSel').value = String(S.lamp.cols); $('modeSel').value = S.lamp.mode; $('hRange').value = S.lamp.h;
+}
+function fitZoom() {
+  const z = $('zoomSel').value, px = pageDim()[0] * 3.7795;
+  doc.style.zoom = z === 'auto' ? Math.min(1, (window.innerWidth - 24) / px) : z;
+}
+window.addEventListener('resize', fitZoom);
+function initRhkSel() {
+  const sel = $('rhkSel'); sel.innerHTML = '<option value="">— Pilih RHK —</option>';
+  (S.tpl.keg || []).forEach(k => { const l = k.split('.')[0]; const o = document.createElement('option'); o.value = l; o.textContent = k; sel.appendChild(o); });
+  $('roleSel').value = S.role || 'waliAsuh';
+}
+function switchRole(role) {
+  if (!['waliAsuh','waliAsrama'].includes(role) || role === S.role) return;
+  if (!confirm('Ganti jabatan ke ' + (role === 'waliAsuh' ? 'Wali Asuh' : 'Wali Asrama') + '? Template dan daftar RHK akan mengikuti matriks jabatan tersebut. Isian laporan utama akan disesuaikan saat RHK pertama diterapkan.')) { $('roleSel').value = S.role; return; }
+  S.roleTpls[S.role] = JSON.parse(JSON.stringify(S.tpl));
+  S.role = role;
+  S.tpl = JSON.parse(JSON.stringify(S.roleTpls[role] || (role === 'waliAsrama' ? WALI_ASRAMA_TPL : DEFTPL)));
+  S.rhk = '';
+  initRhkSel();
+  save();
+  applyRhk('RHK 1');
+  toast('✓ Template ' + (role === 'waliAsuh' ? 'Wali Asuh' : 'Wali Asrama') + ' dimuat sesuai matriks');
+}
+
+// ---------- operasi ----------
+function mv(a, i, d) { const j = i + d; if (j < 0 || j >= a.length) return; [a[i], a[j]] = [a[j], a[i]]; }
+function setOpt(g, k, v) { if (g) S[g][k] = v; else S[k] = v; if (g === 'lamp' && k === 'cols') S.lamp.h = Math.round(640 / v * 0.68); save(); render(); }
+function kopLine(i, a) {
+  const l = S.kop.lines[i];
+  if (a === '-') l.s = Math.max(7, l.s - 1); else if (a === '+') l.s = Math.min(24, l.s + 1);
+  else if (a === 'b') l.b = l.b ? 0 : 1; else if (a === 'up') mv(S.kop.lines, i, -1); else if (a === 'dn') mv(S.kop.lines, i, 1);
+  else if (a === 'x') S.kop.lines.splice(i, 1);
+  save(); render();
+}
+function addKop() { S.kop.lines.push({ t: 'Baris kop baru', s: 10, b: 0 }); save(); render(); }
+function secOp(si, op) {
+  if (op === 'up' || op === 'dn') mv(S.sec, si, op === 'up' ? -1 : 1);
+  else if (op === 'x') { if (!confirm('Hapus bagian “' + S.sec[si].t + '” beserta isinya?')) return; S.sec.splice(si, 1); }
+  else S.sec[si].items.push(op === 'p' ? { t: 'p', x: '' } : op === 'sub' ? { t: 'sub', j: 'Sub-judul', x: '' } : { t: 'kv', k: '', l: 'Label', v: '' });
+  save(); render();
+}
+function itOp(si, ii, op) { const a = S.sec[si].items; if (op === 'x') a.splice(ii, 1); else mv(a, ii, op === 'up' ? -1 : 1); save(); render(); }
+function addSec() { S.sec.push({ t: 'Bagian Baru', items: [{ t: 'p', x: '' }] }); save(); render(); }
+function fotoOp(k, op) { const a = S.lamp.foto; if (op === 'x') a.splice(k, 1); else mv(a, k, op === 'l' ? -1 : 1); save(); render(); }
+function hapusFotoSemua() { if (S.lamp.foto.length && confirm('Hapus semua foto dokumentasi?')) { S.lamp.foto = []; save(); render(); } }
+function hapusTtd() { S.ttd.img = ''; save(); render(); }
+function hapusLogo(s) { S.kop[s] = ''; save(); render(); }
+let logoSide = 'L';
+function pilihLogo(s) { logoSide = s; $('fLogo').click(); }
+
+
+// Template narasi Wali Asuh berdasarkan kombinasi RHK dan shift.
+function asuhShiftNarrative(kode, shift) {
+  const jadwal = {
+    pagi: {
+      label: 'shift pagi',
+      umum: 'Pada shift pagi, pendampingan Wali Asuh berfokus pada kesiapan peserta didik untuk mengikuti kegiatan sekolah dan pemenuhan kebutuhan dasar sebelum serta selama aktivitas pagi hingga siang. Kegiatan dapat meliputi pengecekan kondisi peserta didik di kamar, tindak lanjut kesehatan apabila terdapat peserta didik yang sakit, pembiasaan kebersihan dan kemandirian, pendampingan ibadah dan makan siang, serta pemantauan keberangkatan peserta didik ke sekolah.',
+      kegiatan: 'Pada shift pagi, Wali Asuh melakukan pengecekan kamar untuk mengetahui kondisi peserta didik, termasuk mengidentifikasi peserta didik yang mengalami keluhan kesehatan. Apabila ditemukan peserta didik sakit, Wali Asuh memberikan pendampingan dan membantu mengantarkan ke puskesmas atau rumah sakit sesuai kebutuhan serta prosedur yang berlaku. Pendampingan juga mencakup [pilih kegiatan yang dilaksanakan: membantu mencuci pakaian peserta didik SD; mendampingi salat Dzuhur; mendampingi makan siang; memastikan peserta didik bersiap dan berangkat ke sekolah setelah makan; mendampingi aktivitas harian pada siang hari].',
+      hasil: 'Hasil pelaksanaan shift pagi dicatat berdasarkan kondisi peserta didik saat pengecekan kamar, tindak lanjut terhadap keluhan kesehatan, partisipasi dalam ibadah dan makan siang, serta kesiapan dan keberangkatan ke sekolah. Tuliskan peserta didik yang memerlukan perhatian dan tindak lanjut apabila ada.',
+      lamp: 'Dokumentasi kegiatan Wali Asuh pada shift pagi berupa [nama kegiatan yang tampak pada foto], sebagai bagian dari pendampingan kesiapan sekolah, pemantauan kesehatan, pemenuhan kebutuhan harian, atau pembiasaan peserta didik.'
+    },
+    siang: {
+      label: 'shift siang',
+      umum: 'Pada shift siang, pendampingan Wali Asuh berfokus pada kegiatan peserta didik setelah aktivitas sekolah hingga waktu istirahat malam. Kegiatan meliputi pendampingan ibadah, aktivitas waktu luang yang positif, pembagian makanan ringan, kegiatan keagamaan, makan malam, pendampingan belajar, serta pemantauan kebersihan dan kerapian lingkungan asrama hingga peserta didik beristirahat.',
+      kegiatan: 'Pada shift siang, Wali Asuh mendampingi peserta didik dalam melaksanakan salat Ashar, aktivitas waktu luang seperti olahraga sore atau kegiatan positif lainnya, serta pembagian snack sore. Pendampingan dilanjutkan dengan salat Maghrib, kegiatan mengaji dan pembacaan Asmaul Husna, salat Isya, makan malam, dan kegiatan belajar. Wali Asuh juga memantau kebersihan asrama dan kerapian kamar serta memastikan peserta didik menjalani waktu istirahat malam dengan tertib. Uraikan kegiatan yang benar-benar dilaksanakan pada shift tersebut.',
+      hasil: 'Hasil pelaksanaan shift siang dicatat berdasarkan keterlibatan peserta didik dalam ibadah, kegiatan waktu luang, kegiatan keagamaan, makan, dan belajar, serta kondisi kebersihan asrama dan kerapian kamar. Tuliskan kondisi peserta didik saat diarahkan untuk beristirahat dan hal yang masih memerlukan pendampingan.',
+      lamp: 'Dokumentasi kegiatan Wali Asuh pada shift siang berupa [nama kegiatan yang tampak pada foto], sebagai bagian dari pendampingan ibadah, aktivitas positif, pembelajaran, pemenuhan kebutuhan, atau pembiasaan tertib dan bersih.'
+    },
+    malam: {
+      label: 'shift malam',
+      umum: 'Pada shift malam, pendampingan Wali Asuh berfokus pada pengawasan keamanan dan ketertiban peserta didik selama waktu istirahat serta persiapan untuk mengikuti kegiatan pagi dan sekolah. Kegiatan mencakup pemantauan waktu tidur, patroli malam, pembangkitan dan pendampingan ibadah Subuh, kebersihan lingkungan, kesiapan diri, sarapan, apel pagi, dan keberangkatan peserta didik ke sekolah.',
+      kegiatan: 'Pada shift malam, Wali Asuh memastikan peserta didik beristirahat dan tertidur sesuai ketentuan. Wali Asuh melaksanakan patroli malam untuk memantau keberadaan peserta didik serta mencegah peserta didik berkeliaran atau meninggalkan lingkungan asrama tanpa izin. Pada pagi hari, Wali Asuh membangunkan peserta didik untuk melaksanakan salat Subuh dan mendampingi ibadah, kegiatan membersihkan asrama dan kamar, persiapan diri termasuk mandi dan kesiapan bersekolah, sarapan pagi, apel pagi, serta memastikan peserta didik berangkat ke sekolah.',
+      hasil: 'Hasil pelaksanaan shift malam dicatat berdasarkan ketertiban dan keamanan peserta didik selama waktu istirahat, hasil patroli, partisipasi dalam ibadah Subuh dan kegiatan kebersihan, serta kesiapan peserta didik mengikuti apel dan berangkat ke sekolah. Cantumkan kejadian atau peserta didik yang memerlukan tindak lanjut apabila ada.',
+      lamp: 'Dokumentasi kegiatan Wali Asuh pada shift malam berupa [nama kegiatan yang tampak pada foto], sebagai bagian dari pengawasan waktu istirahat, pendampingan ibadah Subuh, pembiasaan kebersihan, dan persiapan peserta didik mengikuti kegiatan sekolah.'
+    }
+  };
+  const sh = jadwal[shift] || jadwal.pagi;
+  const judul = ['','BIMBINGAN DAN PENGAJARAN PESERTA DIDIK','PEMBINAAN KEMANDIRIAN PESERTA DIDIK','PENDAMPINGAN, BIMBINGAN, MOTIVASI, DAN PEMBINAAN PESERTA DIDIK DALAM ASPEK IBADAH, BELAJAR, DAN AKTIVITAS SEHARI-HARI','BIMBINGAN SPIRITUAL DAN EMOSIONAL, PENERAPAN DISIPLIN, KESEHATAN, DAN KEGIATAN BELAJAR PESERTA DIDIK','PENDAMPINGAN PESERTA DIDIK BERKEBUTUHAN KHUSUS'][Number(String(kode).replace(/\D/g,''))];
+  const fokus = {
+    'RHK 1': 'bimbingan dan pengajaran', 'RHK 2': 'pembinaan kemandirian', 'RHK 3': 'pendampingan ibadah, belajar, dan aktivitas sehari-hari', 'RHK 4': 'bimbingan spiritual dan emosional, disiplin, kesehatan, dan kegiatan belajar', 'RHK 5': 'pendampingan individual peserta didik berkebutuhan khusus'
+  }[kode];
+  let kegiatan = sh.kegiatan;
+  if (kode === 'RHK 1') kegiatan += ' Apabila terdapat kegiatan belajar atau pemberian arahan pembelajaran pada shift ini, jelaskan materi, tugas, atau keterampilan yang didampingi serta bentuk bantuan yang diberikan. Jika tidak ada, sesuaikan uraian dengan kegiatan bimbingan/pengajaran yang benar-benar dilakukan.';
+  if (kode === 'RHK 2') kegiatan += ' Pembinaan kemandirian dapat ditunjukkan melalui keterlibatan peserta didik dalam menjaga kebersihan diri dan lingkungan, merapikan kamar, mengelola perlengkapan pribadi, serta melakukan aktivitas harian sesuai kemampuan. Pada shift pagi, cantumkan bantuan mencuci pakaian peserta didik SD hanya apabila kegiatan tersebut benar-benar dilakukan oleh Wali Asuh.';
+  if (kode === 'RHK 3') kegiatan += ' Pendampingan diarahkan untuk membantu peserta didik mengikuti rutinitas secara tertib, memahami arahan, memperoleh motivasi, dan menjalankan ibadah serta kegiatan harian sesuai agama, kebutuhan, dan kondisi masing-masing.';
+  if (kode === 'RHK 4') kegiatan += ' Untuk peserta didik yang mengalami gangguan kesehatan, cantumkan keluhan, pemantauan, pendampingan ke fasilitas kesehatan, dan tindak lanjut sesuai fakta apabila kegiatan tersebut dilakukan.';
+  if (kode === 'RHK 5') kegiatan += ' Uraikan bentuk bantuan individual yang diberikan, misalnya arahan bertahap, bantuan dalam aktivitas harian, ibadah, makan, kebersihan diri, belajar, atau pemantauan kesehatan. Sesuaikan bantuan dengan kebutuhan dan kemampuan peserta didik; jangan mencantumkan kegiatan yang tidak dilakukan.';
+  // Gambaran Umum dan Maksud/Tujuan dibuat berbeda untuk setiap kombinasi RHK dan shift.
+  const gambaranRhk = {
+    'RHK 1': {
+      pagi: 'Pada shift pagi, bimbingan dan pengajaran Wali Asuh berfokus pada dukungan terhadap kesiapan peserta didik mengikuti pembelajaran di sekolah. Pendampingan dapat berupa pemberian arahan mengenai persiapan sekolah, memastikan peserta didik siap berangkat setelah makan siang, serta membantu kebutuhan belajar atau pengajaran apabila kegiatan tersebut memang dilaksanakan.',
+      siang: 'Pada shift siang, bimbingan dan pengajaran Wali Asuh berfokus pada dukungan terhadap kegiatan belajar peserta didik setelah menjalani aktivitas sekolah. Pendampingan dapat dilakukan melalui pengawasan waktu belajar, pemberian arahan, bantuan memahami atau menyelesaikan tugas, serta dorongan agar peserta didik mengikuti kegiatan belajar dengan tertib.',
+      malam: 'Pada shift malam, bimbingan dan pengajaran Wali Asuh berfokus pada dukungan kesiapan belajar dan sekolah untuk hari berikutnya. Pendampingan dapat berupa arahan persiapan perlengkapan sekolah, penguatan kebiasaan belajar apabila dilaksanakan, serta memastikan peserta didik siap mengikuti apel dan berangkat ke sekolah pada pagi hari.'
+    },
+    'RHK 2': {
+      pagi: 'Pada shift pagi, pembinaan kemandirian Wali Asuh berfokus pada pembiasaan peserta didik dalam mengurus kebutuhan diri dan lingkungan sebelum mengikuti kegiatan sekolah. Kegiatan dapat mencakup menjaga kebersihan diri, merapikan perlengkapan, membantu mencuci pakaian peserta didik SD sesuai kebutuhan, serta membiasakan peserta didik menjalankan rutinitas harian secara bertanggung jawab.',
+      siang: 'Pada shift siang, pembinaan kemandirian Wali Asuh berfokus pada pembiasaan peserta didik dalam mengelola aktivitas setelah pulang sekolah hingga waktu istirahat. Kegiatan dapat mencakup mengikuti aktivitas positif, menjaga kebersihan asrama, merapikan kamar, mengelola perlengkapan pribadi, dan membangun tanggung jawab terhadap lingkungan tempat tinggal.',
+      malam: 'Pada shift malam, pembinaan kemandirian Wali Asuh berfokus pada pembiasaan peserta didik dalam menjaga kebersihan dan mempersiapkan kebutuhan diri untuk kegiatan esok hari. Kegiatan dapat mencakup membersihkan asrama dan kamar, mandi, menyiapkan perlengkapan sekolah, serta membiasakan peserta didik mengikuti rutinitas pagi secara tertib.'
+    },
+    'RHK 3': {
+      pagi: 'Pada shift pagi, pendampingan, bimbingan, motivasi, dan pembinaan Wali Asuh berfokus pada pelaksanaan ibadah serta aktivitas harian peserta didik menjelang dan setelah kegiatan sekolah. Pendampingan meliputi salat Dzuhur, makan siang, pemberian arahan, pemantauan aktivitas siang, dan memastikan peserta didik kembali siap mengikuti kegiatan sekolah.',
+      siang: 'Pada shift siang, pendampingan, bimbingan, motivasi, dan pembinaan Wali Asuh berfokus pada kegiatan peserta didik setelah pulang sekolah hingga waktu istirahat. Kegiatan meliputi pendampingan salat Ashar, aktivitas waktu luang, salat Maghrib, mengaji dan pembacaan Asmaul Husna, salat Isya, makan malam, serta aktivitas harian sesuai kebutuhan peserta didik.',
+      malam: 'Pada shift malam, pendampingan, bimbingan, motivasi, dan pembinaan Wali Asuh berfokus pada pembiasaan ibadah dan rutinitas peserta didik sejak waktu istirahat malam hingga persiapan sekolah. Kegiatan meliputi pendampingan salat Subuh, kebersihan diri dan lingkungan, sarapan, apel pagi, serta pemberian arahan agar peserta didik siap berangkat ke sekolah.'
+    },
+    'RHK 4': {
+      pagi: 'Pada shift pagi, bimbingan spiritual dan emosional, penerapan disiplin, kesehatan, dan kegiatan belajar Wali Asuh berfokus pada pemantauan kondisi peserta didik sejak awal kegiatan hingga persiapan sekolah. Kegiatan dapat mencakup pengecekan kamar dan kondisi kesehatan, pendampingan peserta didik yang sakit ke fasilitas kesehatan, pendampingan ibadah Dzuhur, pengaturan waktu makan, serta pemantauan kesiapan dan kedisiplinan berangkat sekolah.',
+      siang: 'Pada shift siang, bimbingan spiritual dan emosional, penerapan disiplin, kesehatan, dan kegiatan belajar Wali Asuh berfokus pada pemantauan perilaku, kondisi, serta keterlibatan peserta didik dalam rutinitas sore hingga malam. Pendampingan dapat mencakup kegiatan ibadah, aktivitas positif, makan, belajar, kebersihan asrama, kerapian kamar, dan pembiasaan istirahat sesuai tata tertib.',
+      malam: 'Pada shift malam, bimbingan spiritual dan emosional, penerapan disiplin, kesehatan, dan kegiatan belajar Wali Asuh berfokus pada keamanan, ketertiban, kondisi kesehatan, serta kesiapan peserta didik menjalani kegiatan pagi. Kegiatan dapat mencakup pemantauan waktu tidur, patroli malam, pendampingan salat Subuh, kebersihan, persiapan diri, sarapan, apel pagi, dan keberangkatan sekolah.'
+    },
+    'RHK 5': {
+      pagi: 'Pada shift pagi, pendampingan peserta didik berkebutuhan khusus berfokus pada dukungan individual agar peserta didik dapat menjalani rutinitas pagi dan mempersiapkan diri mengikuti kegiatan sekolah. Pendampingan disesuaikan dengan kebutuhan, kemampuan, dan kondisi peserta didik, termasuk bantuan dalam kebersihan diri, makan, ibadah, kesehatan, atau persiapan sekolah apabila diperlukan.',
+      siang: 'Pada shift siang, pendampingan peserta didik berkebutuhan khusus berfokus pada dukungan individual dalam mengikuti aktivitas setelah pulang sekolah hingga waktu istirahat. Pendampingan disesuaikan dengan kebutuhan peserta didik saat mengikuti ibadah, aktivitas waktu luang, makan, belajar, menjaga kebersihan, dan mempersiapkan diri untuk beristirahat.',
+      malam: 'Pada shift malam, pendampingan peserta didik berkebutuhan khusus berfokus pada dukungan individual untuk menjaga kenyamanan dan keamanan selama istirahat serta mempersiapkan diri mengikuti kegiatan pagi. Pendampingan disesuaikan dengan kebutuhan peserta didik dalam rutinitas tidur, ibadah Subuh, kebersihan diri, mandi, sarapan, apel, dan persiapan berangkat sekolah.'
+    }
+  };
+  const maksudRhk = {
+    'RHK 1': 'Kegiatan ini dimaksudkan untuk memberikan bimbingan dan pengajaran yang mendukung proses belajar peserta didik pada shift yang dilaporkan. Tujuannya adalah membantu peserta didik memahami arahan atau materi, menyelesaikan tugas, menyiapkan kebutuhan belajar, dan mengikuti kegiatan pembelajaran secara tertib sesuai bentuk pendampingan yang benar-benar dilakukan.',
+    'RHK 2': 'Kegiatan ini dimaksudkan untuk membina kemampuan peserta didik dalam mengurus diri, perlengkapan pribadi, dan lingkungan melalui pembiasaan pada shift yang dilaporkan. Tujuannya adalah meningkatkan inisiatif, tanggung jawab, kebersihan, kerapian, serta kemampuan melaksanakan aktivitas sehari-hari secara mandiri sesuai kemampuan masing-masing.',
+    'RHK 3': 'Kegiatan ini dimaksudkan untuk memberikan pendampingan, bimbingan, motivasi, dan pembinaan dalam aspek ibadah serta aktivitas sehari-hari peserta didik pada shift yang dilaporkan. Tujuannya adalah membantu peserta didik mengikuti rutinitas secara terarah, membangun kebiasaan positif, dan memperoleh dukungan sesuai kebutuhan.',
+    'RHK 4': 'Kegiatan ini dimaksudkan untuk memberikan perhatian dan pendampingan terhadap kebutuhan spiritual, emosional, kedisiplinan, kesehatan, dan kegiatan belajar peserta didik pada shift yang dilaporkan. Tujuannya adalah memantau kondisi peserta didik, mendukung perilaku tertib dan sehat, serta memastikan kebutuhan yang ditemukan memperoleh penanganan atau tindak lanjut sesuai kondisi nyata.',
+    'RHK 5': 'Kegiatan ini dimaksudkan untuk memberikan dukungan individual kepada peserta didik berkebutuhan khusus selama menjalani rutinitas pada shift yang dilaporkan. Tujuannya adalah membantu peserta didik berpartisipasi dalam kegiatan, mengatasi hambatan yang dihadapi, dan mengembangkan kemampuan serta kemandirian melalui bantuan yang sesuai dengan kebutuhan dan kemampuannya.'
+  };
+  const gambaran = (gambaranRhk[kode] && gambaranRhk[kode][shift]) || sh.umum;
+  const maksud = maksudRhk[kode] + ' Pelaksanaan dan bentuk bantuan disesuaikan dengan kegiatan yang benar-benar berlangsung pada ' + sh.label + '.';
+  const ruang = 'Ruang lingkup laporan meliputi kegiatan Wali Asuh pada ' + sh.label + ' yang relevan dengan ' + fokus + ', termasuk pendampingan, pemberian arahan dan motivasi, pemantauan kondisi serta perilaku peserta didik, pencatatan kejadian, dan tindak lanjut atau koordinasi apabila dilakukan. Pilih uraian yang sesuai dengan kegiatan pada tanggal laporan.';
+  const hasil = sh.hasil + ' Secara khusus, hasil pada ' + kode + ' berupa [uraikan hasil yang dapat diamati terkait ' + fokus + '].';
+  const kesimpulan = 'Secara keseluruhan, pelaksanaan tugas Wali Asuh pada ' + sh.label + ' dalam lingkup ' + fokus + ' telah dilakukan melalui kegiatan yang tercantum dalam laporan. Hasil pemantauan, kondisi peserta didik, dan kebutuhan tindak lanjut dicatat berdasarkan kejadian serta kegiatan yang benar-benar berlangsung.';
+  return { judul: 'LAPORAN ' + judul, gambaran, maksud, ruang, kegiatan, hasil, kesimpulan, ket: sh.lamp };
+}
+
+// RHK + shift
+function applyRhk(l) {
+  if (!l) { S.rhk = ''; save(); render(); return; }
+  if (S.rhk && !confirm('Isi judul, Pendahuluan, Kegiatan, Hasil, Kesimpulan, dan kalimat dokumentasi dengan template ' + l + '? Teks yang sudah Anda ubah di bagian itu akan diganti.')) { $('rhkSel').value = S.rhk; return; }
+  S.rhk = l;
+  const asuhNar = S.role === 'waliAsuh' ? asuhShiftNarrative(l, S.shift) : null;
+  FIELDS.forEach(([f]) => {
+    const t = asuhNar ? { t: asuhNar[f] } : (S.tpl.nar[f] || []).find(x => x.l === l); if (!t) return;
+    if (f === 'judul') S.judul = t.t; else if (f === 'ket') S.lamp.ket = t.t;
+    else S.sec.forEach(s => s.items.forEach(it => { if (it.f === f) it.x = t.t; }));
+  });
+  const kt = kegDefault();
+  if (kt) S.rows.forEach(r => { if (!String(r.keg).trim()) r.keg = kt; });
+  save(); render();
+  toast('✓ Template ' + l + ' untuk ' + shiftLabel(S.shift) + ' diterapkan. Sesuaikan bagian yang tidak dilakukan.', 4500);
+}
+function setShift(v) {
+  const old = S.shift; S.shift = v;
+  S.sec.forEach(s => s.items.forEach(it => { if (it.t === 'kv' && it.k === 'waktu') it.v = waktuTxt(v); }));
+  S.rows.forEach(r => { if (!r.shift || r.shift === old) { r.shift = v; r.shiftTxt = null; } });
+  save(); render();
+  if (S.rhk && S.role === 'waliAsuh') toast('Shift berubah. Pilih ulang RHK agar Gambaran Umum, Kegiatan, Hasil, Kesimpulan, dan Lampiran mengikuti shift ' + shiftLabel(v) + '.', 6000);
+}
+
+// baris lampiran
+function addDays(ds, n) { const o = dobj(ds); o.setDate(o.getDate() + n); return ymd(o); }
+function sortRows() { const k = r => r.date || '9999-99-99'; S.rows.sort((a, b) => k(a) < k(b) ? -1 : k(a) > k(b) ? 1 : 0); }
+function urutkan() { sortRows(); save(); render(); toast('✓ Baris diurutkan menurut tanggal'); }
+function rowDate(i, v) { const r = S.rows[i]; r.date = v; r.tgl = null; if (S.auto !== false) sortRows(); save(); render(); }
+function rowShift(i, v) { const r = S.rows[i]; r.shift = v; r.shiftTxt = null; save(); render(); }
+function rowOp(i, op) {
+  const a = S.rows;
+  if (op === 'up') mv(a, i, -1);
+  else if (op === 'dn') mv(a, i, 1);
+  else if (op === 'add') a.splice(i + 1, 0, Object.assign(mkRow(a[i].date, { shift: a[i].shift, keg: a[i].keg })));
+  else if (op === 'x') {
+    const r = a[i];
+    if (((r.keg || '') + (r.rinc || '')).trim() && !confirm('Hapus baris ini beserta isinya?')) return;
+    a.splice(i, 1);
+  }
+  save(); render();
+}
+function tambahBaris(n) {
+  n = Math.max(1, Math.min(60, n || 1));
+  let d = S.rows.map(r => r.date).filter(Boolean).sort().pop() || '';
+  for (let k = 0; k < n; k++) { d = d ? addDays(d, 1) : todayS; S.rows.push(mkRow(d)); }
+  save(); render();
+  const t = document.querySelectorAll('.tb1 tbody tr'); if (t.length && t[t.length - 1].scrollIntoView) t[t.length - 1].scrollIntoView({ block: 'center', behavior: 'smooth' });
+}
+function isiBulan() {
+  const ds = S.rows.map(r => r.date).filter(Boolean).sort();
+  const base = dobj(ds[0] || todayS), y = base.getFullYear(), m = base.getMonth();
+  const ada = new Set(S.rows.map(r => r.date)); let n = 0;
+  for (let d = 1; d <= new Date(y, m + 1, 0).getDate(); d++) { const s = `${y}-${p2(m + 1)}-${p2(d)}`; if (!ada.has(s)) { S.rows.push(mkRow(s)); n++; } }
+  sortRows(); save(); render(); toast(n ? `✓ ${n} baris tanggal ditambahkan` : 'Semua tanggal bulan ini sudah ada');
+}
+function hapusKosong() {
+  const kosong = r => !((r.keg || '') + (r.rinc || '')).trim();
+  const n = S.rows.filter(kosong).length;
+  if (!n) { toast('Tidak ada baris kosong'); return; }
+  if (!confirm(`Hapus ${n} baris yang belum berisi kegiatan maupun rincian?`)) return;
+  S.rows = S.rows.filter(r => !kosong(r)); save(); render();
+}
+
+function isiCepat() {
+  const v = id => $(id).value.trim();
+  const setKv = (k, val) => { if (val) S.sec.forEach(s => s.items.forEach(it => { if (it.t === 'kv' && it.k === k) it.v = val; })); };
+  setKv('nama', v('fNama')); setKv('nip', v('fNip')); setKv('jabatan', v('fJab'));
+  if (v('fNama')) S.ttd.nama = v('fNama');
+  if (v('fNip')) S.ttd.nip = v('fNip');
+  if (v('fTempat')) S.ttd.tempat = v('fTempat');
+  if (v('fTgl')) {
+    setKv('hari', hariLabel(v('fTgl')));
+    S.ttd.tgl = tglLabel(v('fTgl'));
+    if (S.rows.length === 1) { S.rows[0].date = v('fTgl'); S.rows[0].tgl = null; }
+  }
+  save(); render();
+}
+
+function buatPromptAI() {
+ const aktivitas = $('aiAktivitas').value.trim();
+ if (!aktivitas) { alert('Tuliskan kegiatan nyata yang dilakukan terlebih dahulu.'); $('aiAktivitas').focus(); return; }
+ const role = S.role === 'waliAsrama' ? 'Wali Asrama' : 'Wali Asuh';
+ const kode = S.rhk || 'belum dipilih';
+ const judulRhk = (S.tpl.rhk.find(g=>g.kode===kode)||{}).judul || kode;
+ const fokusRhk = {
+  'RHK 1':'Catat materi/tugas, bentuk bimbingan, kesulitan yang ditemukan, dan respons/hasil belajar yang teramati.',
+  'RHK 2':'Catat aktivitas kemandirian, kemampuan peserta didik, bantuan/arahan, dan hasil nyata yang terlihat.',
+  'RHK 3':'Catat jenis pendampingan (ibadah/belajar/aktivitas harian), motivasi yang diberikan, dan respons peserta didik.',
+  'RHK 4':'Catat kondisi relevan, pemantauan kesehatan/spiritual/emosional/disiplin/belajar, tindakan, serta tindak lanjut faktual.',
+  'RHK 5':'Jelaskan kebutuhan dukungan individual, bentuk dan tingkat bantuan, respons, hal yang dilakukan mandiri, serta perkembangan teramati.'
+ }[kode] || 'Sesuaikan uraian dengan kegiatan yang benar-benar dilakukan dan RHK jabatan.';
+ const prompt = `Bertindaklah sebagai asisten penyusun laporan resmi kegiatan tenaga kependidikan Sekolah Rakyat.\nJabatan: ${role}.\nRHK: ${kode} - ${judulRhk}.\nFokus pengisian khusus RHK: ${fokusRhk}\nKegiatan nyata yang dilakukan: ${aktivitas}.\n\nSusun teks bahasa Indonesia formal, jelas, ringkas, dan tidak berlebihan untuk bagian: judul, gambaran umum, maksud dan tujuan, ruang lingkup, kegiatan yang dilaksanakan, hasil yang dicapai, kesimpulan, dan keterangan di bawah dokumentasi. Jangan mengarang tanggal, nama, jumlah peserta, hasil, tindak lanjut, atau fakta yang tidak diberikan. Jika data tidak tersedia, gunakan tanda [isi sesuai data]. Hindari klaim keberhasilan yang tidak dibuktikan. Pastikan isi sesuai RHK jabatan yang dipilih dan jangan mencampurkan tugas jabatan lain.\n\nKeluarkan HANYA JSON valid dengan kunci persis: judul, gambaran, maksud, ruang, kegiatan, hasil, kesimpulan, ket. Semua nilai berupa string. Jangan gunakan markdown atau code fence.`;
+ const box = document.createElement('textarea'); box.value = prompt; document.body.appendChild(box); box.select();
+ let copied = false; try { copied = document.execCommand('copy'); } catch(e) {}
+ box.remove();
+ if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(prompt).then(()=>toast('✓ Prompt disalin. Tempel di ChatGPT pada tab baru.',3000)).catch(()=>toast(copied?'✓ Prompt disalin. Tempel di ChatGPT.':'Salin prompt dari clipboard secara manual.',3000));
+ else toast(copied?'✓ Prompt disalin. Tempel di ChatGPT.':'Browser tidak mengizinkan salin otomatis. Coba kembali.',3000);
+ window.open('https://chatgpt.com/','_blank','noopener');
+}
+function terapkanAI() {
+ let raw = $('aiHasil').value.trim(); if (!raw) { alert('Tempel hasil AI terlebih dahulu.'); return; }
+ raw = raw.replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,'');
+ let o; try { o = JSON.parse(raw); } catch(e) { alert('Hasil belum berupa JSON valid. Salin seluruh JSON dari ChatGPT, lalu tempel kembali.'); return; }
+ const allowed = ['judul','gambaran','maksud','ruang','kegiatan','hasil','kesimpulan','ket'];
+ if (!o || !allowed.some(k=>typeof o[k]==='string')) { alert('Format hasil tidak sesuai. Gunakan prompt yang disediakan dan pastikan kunci JSON lengkap.'); return; }
+ allowed.forEach(k=>{ if(typeof o[k]!=='string') return; if(k==='judul') S.judul=o[k]; else if(k==='ket') S.lamp.ket=o[k]; else S.sec.forEach(sec=>sec.items.forEach(it=>{if(it.f===k) it.x=o[k];})); });
+ save(); render(); toast('✓ Hasil AI diterapkan. Periksa dan koreksi seluruh isi sebelum digunakan.',4500);
+}
+
+// ---------- template klik ----------
+let tpCtx = null, tT, tpLastG = 0;
+function toast(m, ms) { const t = $('toast'); t.textContent = m; t.style.display = 'block'; clearTimeout(tT); tT = setTimeout(() => t.style.display = 'none', ms || 1600); }
+const rowIdx = id => S.rows.findIndex(r => r.id === id);
+function placePop(ev) {
+  const tp = $('tp'); tp.style.display = 'block';
+  const b = ev.currentTarget.getBoundingClientRect(), w = tp.offsetWidth;
+  tp.style.left = Math.max(8, Math.min(b.left, window.innerWidth - w - 8)) + 'px';
+  let y = b.bottom + 4; const h = tp.offsetHeight;
+  if (y + h > window.innerHeight - 8) y = Math.max(8, window.innerHeight - h - 8);
+  tp.style.top = y + 'px';
+}
+function openNar(f, path, ev) { ev.stopPropagation(); tpCtx = { type: 'nar', f, path }; drawTp(); placePop(ev); }
+function rhkDariKeg(r) {
+  const m = /RHK\s*(\d)/i.exec(r.keg || ''); if (!m) return -1;
+  return S.tpl.rhk.findIndex(g => new RegExp('^RHK\\s*' + m[1] + '\\b', 'i').test(g.kode));
+}
+function openTpl(i, f, ev) {
+  ev.stopPropagation();
+  const r = S.rows[i];
+  let g = f === 'rinc' ? rhkDariKeg(r) : 0;
+  if (g < 0) g = S.rhk ? S.tpl.rhk.findIndex(x => x.kode === S.rhk) : -1;
+  if (g < 0) g = Math.min(tpLastG, S.tpl.rhk.length - 1);
+  tpCtx = { type: f, id: r.id, g: Math.max(0, g), q: '', guide: false };
+  drawTp(); placePop(ev);
+}
+function drawTp() {
+  const c = tpCtx, tp = $('tp');
+  if (c.type === 'nar') {
+    const L = S.tpl.nar[c.f] || [];
+    const order = L.map((t, k) => k).sort((a, b) => (L[b].l === S.rhk) - (L[a].l === S.rhk));
+    const items = order.map(k => `<div class="ti"><button class="tx" onclick="narPakai(${k},true)"><b>${esc(L[k].l)}</b>${L[k].l === S.rhk ? ' ✓' : ''}\n${esc(L[k].t)}</button>${c.f === 'judul' ? '' : `<button class="rp" onclick="narPakai(${k},false)">+ Tambah</button>`}</div>`).join('') || '<div class="ti" style="color:#64748b">Belum ada template.</div>';
+    tp.innerHTML = `<h4>Template ${esc(fieldName(c.f))}<br><span style="font-weight:400;color:#64748b">Klik teks = ganti isi. “+ Tambah” = tambahkan di belakang isi yang ada.</span></h4>${items}<div class="ft2"><button class="b s" onclick="narSimpan()">💾 Simpan isi ini jadi template</button><button class="b l" onclick="bukaTm('nar')">📝 Kelola</button><button class="b l" onclick="tutupTp()">Tutup</button></div>`;
+    return;
+  }
+  const r = S.rows[rowIdx(c.id)] || {};
+  const nama = c.type === 'keg' ? 'Kegiatan' : 'Uraian / Rincian Kegiatan';
+  const info = r.tgl != null ? r.tgl : (r.date ? hariLabel(r.date) : 'baris ini');
+  let mid = '';
+  if (c.type === 'rinc') {
+    const tabs = S.tpl.rhk.map((g, gi) => `<button class="rtab${gi === c.g && !c.q && !c.guide ? ' on' : ''}" onclick="tpTab(${gi})">${esc(g.kode)}</button>`).join('');
+    mid = `<div class="rtabs">${tabs}</div><div style="padding:6px 8px"><input id="tpq" type="text" placeholder="Cari template (semua RHK)..." oninput="tpSearch(this.value)" style="width:100%;font-size:12px;padding:4px 6px;border:1px solid #cbd5e1;border-radius:6px"></div>`;
+  }
+  tp.innerHTML = `<h4>Template ${nama} - ${esc(info)}<br><span style="font-weight:400;color:#64748b">Klik teks = tambahkan ke sel. “Ganti” = timpa isi sel.</span></h4>${mid}<div id="tpb"></div><div class="ft2"><button class="b s" onclick="simpanTpl()">💾 Simpan isi sel jadi template</button>${c.type === 'rinc' ? '<button class="b l" onclick="tpGuide()">ℹ️ Panduan foto → RHK</button>' : ''}<button class="b l" onclick="bukaTm('${c.type === 'keg' ? 'keg' : 'rinc'}')">📝 Kelola</button><button class="b l" onclick="tutupTp()">Tutup</button></div>`;
+  drawTpBody();
+}
+function drawTpBody() {
+  const c = tpCtx, el = $('tpb'); if (!el || !c) return;
+  let h = '';
+  if (c.guide) {
+    h = `<div class="rhd"><b>Foto masuk RHK mana?</b></div><div style="padding:6px 8px"><table class="gt">${PANDUAN.map(p => `<tr><td>${esc(p[0])}</td><td><b>${esc(p[1])}</b></td></tr>`).join('')}</table><div style="margin-top:6px;color:#64748b">${esc(CATATAN_PANDUAN)}</div></div>`;
+  } else if (c.type === 'keg') {
+    h = S.tpl.keg.map((t, k) => t.trim() ? `<div class="ti"><button class="tx" onclick="pakaiKeg(${k},false)">${esc(t)}</button><button class="rp" onclick="pakaiKeg(${k},true)">Ganti</button></div>` : '').join('') || '<div class="ti" style="color:#64748b">Belum ada template.</div>';
+  } else {
+    const G = S.tpl.rhk, q = (c.q || '').trim().toLowerCase();
+    const item = (gi, ii) => { const t = G[gi].items[ii]; return `<div class="ti"><button class="tx" onclick="pakaiRinc(${gi},${ii},false)"><b>${esc(t.judul)}</b>\n${esc(t.teks)}</button><button class="rp" onclick="pakaiRinc(${gi},${ii},true)">Ganti</button></div>`; };
+    if (q) {
+      G.forEach((g, gi) => {
+        const hit = g.items.map((t, ii) => ((g.kode + ' ' + g.judul + ' ' + t.judul + ' ' + t.teks).toLowerCase().includes(q) ? ii : -1)).filter(x => x >= 0);
+        if (hit.length) h += `<div class="rhd"><b>${esc(g.kode)}</b> ${esc(g.judul)}</div>` + hit.map(ii => item(gi, ii)).join('');
+      });
+      if (!h) h = '<div class="ti" style="color:#64748b">Tidak ada yang cocok.</div>';
+    } else {
+      const g = G[c.g];
+      if (g) h = `<div class="rhd"><b>${esc(g.kode)}</b> ${esc(g.judul)}${g.fokus ? `<br>Fokus: ${esc(g.fokus)}` : ''}${g.tip ? `<br><i>${esc(g.tip)}</i>` : ''}</div>` + (g.items.map((t, ii) => item(c.g, ii)).join('') || '<div class="ti" style="color:#64748b">Belum ada template di grup ini.</div>');
+    }
+  }
+  el.innerHTML = h;
+}
+function tpTab(gi) { tpCtx.g = gi; tpCtx.q = ''; tpCtx.guide = false; tpLastG = gi; drawTp(); }
+function tpSearch(v) { tpCtx.q = v; tpCtx.guide = false; drawTpBody(); }
+function tpGuide() { tpCtx.guide = !tpCtx.guide; drawTp(); }
+function tutupTp() { $('tp').style.display = 'none'; tpCtx = null; }
+function narPakai(k, ganti) {
+  const c = tpCtx; if (!c) return;
+  const t = S.tpl.nar[c.f][k].t, cur = String(getPath(c.path) || '').replace(/\s+$/, '');
+  setPath(c.path, (ganti || !cur) ? t : cur + ' ' + t);
+  save(); tutupTp(); render(); toast('✓ Template dipakai');
+}
+function narSimpan() {
+  const c = tpCtx; if (!c) return;
+  const t = String(getPath(c.path) || '').trim();
+  if (!t) { toast('Isinya masih kosong'); return; }
+  if (S.tpl.nar[c.f].some(x => x.t.trim() === t)) { toast('Sudah ada di template'); return; }
+  S.tpl.nar[c.f].push({ l: 'Buatan saya', t }); save(); drawTp(); toast('✓ Disimpan sebagai “Buatan saya” (ubah namanya di Kelola template)');
+}
+function isiSel(t, ganti) {
+  if (!tpCtx) return;
+  const i = rowIdx(tpCtx.id); if (i < 0) return;
+  const r = S.rows[i], f = tpCtx.type, cur = (r[f] || '').replace(/\s+$/, '');
+  r[f] = (ganti || !cur) ? t : cur + '\n' + t;
+  save(); render(); toast('✓ Masuk ke baris ' + (i + 1));
+}
+function pakaiKeg(k, ganti) { isiSel(S.tpl.keg[k], ganti); }
+function pakaiRinc(gi, ii, ganti) { isiSel(S.tpl.rhk[gi].items[ii].teks, ganti); }
+function simpanTpl() {
+  if (!tpCtx) return;
+  const i = rowIdx(tpCtx.id), f = tpCtx.type, t = ((S.rows[i] || {})[f] || '').trim();
+  if (!t) { toast('Sel masih kosong'); return; }
+  if (f === 'keg') {
+    if (S.tpl.keg.includes(t)) { toast('Sudah ada di template'); return; }
+    S.tpl.keg.push(t);
+  } else {
+    const g = S.tpl.rhk[tpCtx.g]; if (!g) { toast('Pilih tab RHK dulu'); return; }
+    if (g.items.some(x => x.teks.trim() === t)) { toast('Sudah ada di ' + g.kode); return; }
+    const j = t.split('\n')[0]; g.items.push({ judul: j.slice(0, 40) + (j.length > 40 ? '…' : ''), teks: t });
+  }
+  save(); drawTp(); toast('✓ Template disimpan');
+}
+
+// kelola template
+let tmTab = 'nar';
+function bukaTm(t) { tutupTp(); if (t) tmTab = t; drawTm(); $('tm').style.display = 'flex'; }
+function tutupTm() { $('tm').style.display = 'none'; }
+function drawTm() {
+  const tabs = [['nar', 'Narasi laporan (per RHK)'], ['keg', 'Lampiran: Kegiatan'], ['rinc', 'Lampiran: Rincian per RHK']];
+  $('tmTabs').innerHTML = tabs.map(([k, n]) => `<button class="rtab${tmTab === k ? ' on' : ''}" onclick="tmTab='${k}';drawTm()">${n}</button>`).join('');
+  const btn = (fn, a) => `<span style="display:flex;flex-direction:column;gap:2px"><button class="b2" onclick="${fn}(${a}'up')">▲</button><button class="b2" onclick="${fn}(${a}'dn')">▼</button><button class="b2" onclick="${fn}(${a}'x')">🗑</button></span>`;
+  let h = '';
+  if (tmTab === 'nar') {
+    h = FIELDS.map(([f, nm]) => `<div class="gbx"><div class="gh"><b>${esc(nm)}</b></div>` +
+      (S.tpl.nar[f] || []).map((t, k) => `<div class="tmi"><span style="flex:1"><input type="text" style="width:130px;margin-bottom:3px" value="${esc(t.l)}" oninput="S.tpl.nar['${f}'][${k}].l=this.value;sv()" title="Nama / label (RHK 1, RHK 2, ...)"><textarea style="min-height:${f === 'judul' ? 40 : 84}px" oninput="S.tpl.nar['${f}'][${k}].t=this.value;sv()">${esc(t.t)}</textarea></span>${btn('narOp', `'${f}',${k},`)}</div>`).join('') +
+      `<button class="b2" onclick="narOp('${f}',-1,'add')">+ template ${esc(nm)}</button></div>`).join('') +
+      '<div style="color:#64748b">Label “RHK 1” … “RHK 5” dipakai tombol 🎯 Pilih RHK untuk mencari teks yang cocok. Label lain (mis. “Buatan saya”) hanya muncul saat Anda klik 📋 Template.</div>';
+  } else if (tmTab === 'keg') {
+    h = `<div class="gbx"><div class="gh"><b>Kegiatan (kolom tabel lampiran)</b></div>` + S.tpl.keg.map((t, k) => `<div class="tmi"><textarea oninput="S.tpl.keg[${k}]=this.value;sv()">${esc(t)}</textarea>${btn('kegOp', `${k},`)}</div>`).join('') + `<button class="b2" onclick="kegOp(-1,'add')">+ Template Kegiatan</button></div>`;
+  } else {
+    h = S.tpl.rhk.map((g, gi) => `<div class="gbx"><div class="gh"><input type="text" style="width:78px" value="${esc(g.kode)}" oninput="S.tpl.rhk[${gi}].kode=this.value;sv()"><input type="text" style="flex:1" value="${esc(g.judul)}" oninput="S.tpl.rhk[${gi}].judul=this.value;sv()">${btn('grupOp', `${gi},`)}</div>` +
+      g.items.map((t, ii) => `<div class="tmi"><span style="flex:1"><input type="text" style="width:100%;margin-bottom:3px" placeholder="Judul singkat" value="${esc(t.judul)}" oninput="S.tpl.rhk[${gi}].items[${ii}].judul=this.value;sv()"><textarea oninput="S.tpl.rhk[${gi}].items[${ii}].teks=this.value;sv()">${esc(t.teks)}</textarea></span>${btn('itemOp', `${gi},${ii},`)}</div>`).join('') +
+      `<button class="b2" onclick="itemOp(${gi},-1,'add')">+ template di ${esc(g.kode)}</button></div>`).join('') + `<button class="b l" onclick="grupOp(-1,'add')">+ Grup RHK baru</button>`;
+  }
+  $('tmBody').innerHTML = h;
+}
+function narOp(f, k, op) { const a = S.tpl.nar[f]; if (op === 'add') a.push({ l: 'Buatan saya', t: '' }); else if (op === 'x') a.splice(k, 1); else mv(a, k, op === 'up' ? -1 : 1); save(); drawTm(); }
+function kegOp(k, op) { const a = S.tpl.keg; if (op === 'add') a.push(''); else if (op === 'x') a.splice(k, 1); else mv(a, k, op === 'up' ? -1 : 1); save(); drawTm(); }
+function itemOp(gi, ii, op) { const a = S.tpl.rhk[gi].items; if (op === 'add') a.push({ judul: '', teks: '' }); else if (op === 'x') a.splice(ii, 1); else mv(a, ii, op === 'up' ? -1 : 1); save(); drawTm(); }
+function grupOp(gi, op) {
+  const a = S.tpl.rhk;
+  if (op === 'add') a.push({ kode: 'RHK ?', judul: '', fokus: '', tip: '', items: [] });
+  else if (op === 'x') { if (a[gi].items.length && !confirm('Hapus grup ' + a[gi].kode + ' beserta ' + a[gi].items.length + ' template di dalamnya?')) return; a.splice(gi, 1); }
+  else mv(a, gi, op === 'up' ? -1 : 1);
+  save(); drawTm();
+}
+function resetTpl() { if (!confirm('Kembalikan template jabatan yang sedang dipilih ke bawaan? Template buatan Anda untuk jabatan ini akan diganti.')) return; S.tpl = JSON.parse(JSON.stringify(S.role === 'waliAsrama' ? WALI_ASRAMA_TPL : DEFTPL)); S.roleTpls[S.role] = JSON.parse(JSON.stringify(S.tpl)); save(); initRhkSel(); drawTm(); }
+document.addEventListener('pointerdown', e => { const tp = $('tp'); if (tp.style.display === 'block' && !e.target.closest('#tp') && !e.target.closest('.tplbtn')) tutupTp(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { tutupTp(); tutupTm(); } });
+
+// ---------- gambar ----------
+function loadImg(file, max, type, q) {
+  return new Promise((res, rej) => {
+    const fr = new FileReader();
+    fr.onerror = rej;
+    fr.onload = () => {
+      const im = new Image();
+      im.onerror = rej;
+      im.onload = () => {
+        const r = Math.min(1, max / Math.max(im.width, im.height));
+        const w = Math.round(im.width * r), h = Math.round(im.height * r);
+        const c = document.createElement('canvas'); c.width = w; c.height = h;
+        const x = c.getContext('2d');
+        if (type === 'image/jpeg') { x.fillStyle = '#fff'; x.fillRect(0, 0, w, h); }
+        x.drawImage(im, 0, 0, w, h);
+        res(c.toDataURL(type, q));
+      };
+      im.src = fr.result;
+    };
+    fr.readAsDataURL(file);
+  });
+}
+$('fLogo').onchange = async e => { const f = e.target.files[0]; if (!f) return; S.kop[logoSide] = await loadImg(f, 500, 'image/png'); e.target.value = ''; save(); render(); };
+$('fTtd').onchange = async e => { const f = e.target.files[0]; if (!f) return; S.ttd.img = await loadImg(f, 600, 'image/png'); e.target.value = ''; save(); render(); };
+$('fFoto').onchange = async e => {
+  for (const f of e.target.files) { try { S.lamp.foto.push({ s: await loadImg(f, 1100, 'image/jpeg', 0.8), c: '' }); } catch (err) {} }
+  e.target.value = ''; save(); render();
+};
+
+// ---------- editing, paste, drag ----------
+doc.addEventListener('input', e => {
+  const el = e.target.closest('[data-p]'); if (!el) return;
+  const val = el.innerText.replace(/\n$/, '');
+  setPath(el.dataset.p, val); sv();
+  if (el.dataset.p.indexOf('kop.') === 0) doc.querySelectorAll('[data-p="' + el.dataset.p + '"]').forEach(o => { if (o !== el) o.innerText = val; });
+});
+doc.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && e.target.closest('[data-p]') && !e.target.closest('.p,.ket,[data-ml]')) { e.preventDefault(); e.target.blur(); }
+});
+doc.addEventListener('paste', e => {
+  if (!e.target.isContentEditable) return;
+  e.preventDefault();
+  let t = (e.clipboardData || window.clipboardData).getData('text/plain');
+  if (!e.target.closest('.p,.ket,[data-ml]')) t = t.replace(/\s*\n\s*/g, ' ');
+  document.execCommand('insertText', false, t);
+});
+doc.addEventListener('pointerdown', e => {
+  const sg = e.target.closest('.sg'); if (!sg) return;
+  e.preventDefault();
+  const rz = e.target.classList.contains('rz');
+  const st = { x: e.clientX, y: e.clientY, ox: S.ttd.x, oy: S.ttd.y, ow: S.ttd.w };
+  sg.setPointerCapture(e.pointerId);
+  const move = ev => {
+    const dx = ev.clientX - st.x, dy = ev.clientY - st.y;
+    if (rz) { S.ttd.w = Math.max(30, Math.round(st.ow + dx)); sg.style.width = S.ttd.w + 'px'; $('ttdW').value = S.ttd.w; }
+    else { S.ttd.x = Math.round(st.ox + dx); S.ttd.y = Math.round(st.oy + dy); sg.style.left = S.ttd.x + 'px'; sg.style.top = S.ttd.y + 'px'; }
+  };
+  const up = () => { sg.removeEventListener('pointermove', move); sg.removeEventListener('pointerup', up); save(); };
+  sg.addEventListener('pointermove', move); sg.addEventListener('pointerup', up);
+});
+
+// ---------- ekspor ----------
+function buildWord() {
+  const c = doc.cloneNode(true);
+  c.querySelectorAll('.no-print').forEach(e => e.remove());
+  c.querySelectorAll('[contenteditable]').forEach(e => e.removeAttribute('contenteditable'));
+  const sg = c.querySelector('.sg');
+  if (sg) {
+    const sp = c.querySelector('.ttd-space');
+    sp.style.height = 'auto';
+    sp.innerHTML = `<img src="${S.ttd.img}" width="${S.ttd.w}" style="margin-left:${Math.max(0, S.ttd.x)}px">`;
+    sg.remove();
+  }
+  c.querySelectorAll('.p,.ket,.v,.pl').forEach(e => { e.innerHTML = e.innerHTML.replace(/\n/g, '<br>'); });
+  const [pw, ph] = pageDim();
+  const css = `@page WordSection1{size:${pw / 10}cm ${ph / 10}cm;mso-page-orientation:${S.orient === 'portrait' ? 'portrait' : 'landscape'};margin:1.2cm 1.5cm}div.WordSection1{page:WordSection1}body{font-family:'${S.font}',Arial;font-size:${S.fs}pt}table{border-collapse:collapse}.kv{width:100%}.kv td{vertical-align:top;padding:1px 0}.kv .n{width:30px}.hd .n{width:36px}.kv .l{width:125px}.kv .c{width:14px}.it{margin-left:36px}.p{text-align:justify;text-indent:36px;margin:2px 0 4px}.jd{text-align:center;font-weight:bold}.kl{text-align:center}.kopline{border-top:3px solid #000;border-bottom:1px solid #000;height:2px;margin:6px 0 14px}.lamp{page-break-before:always}.lh{margin:10px 0 4px}.tb1{width:100%;table-layout:fixed}.tb1 th,.tb1 td{border:1px solid #000;padding:2px 4px;vertical-align:top}.tb1 th{text-align:center;font-weight:bold}.gal{width:100%;table-layout:fixed}.gal td{text-align:center;vertical-align:top;padding:3px}.gb{text-align:center}.cap{font-size:8pt}.ket{text-align:center;font-weight:bold}`;
+  return `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>Laporan RHK</title><style>${css}</style></head><body><div class="WordSection1">${c.innerHTML}</div></body></html>`;
+}
+function dl(blob, name) {
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+}
+const fnama = () => 'Laporan_' + (S.rhk ? S.rhk.replace(/\s+/g, '') + '_' : 'RHK_') + new Date().toISOString().slice(0, 10);
+function validasiLaporan() {
+  const getF = f => S.sec.flatMap(sec => sec.items).filter(it => it.f === f).map(it => String(it.x || '').trim()).join(' ');
+  const issues = [];
+  const nama = S.sec.flatMap(sec => sec.items).find(it => it.k === 'nama');
+  if (!nama || !String(nama.v || '').trim() || /nama lengkap/i.test(nama.v)) issues.push('Nama petugas belum diisi.');
+  if (!S.rhk) issues.push('RHK belum dipilih.');
+  if (!S.shift) issues.push('Shift belum dipilih.');
+  if (!S.sec.flatMap(sec=>sec.items).some(it=>it.k==='hari' && String(it.v||'').trim())) issues.push('Hari/tanggal belum diisi.');
+  if (!getF('kegiatan')) issues.push('Uraian kegiatan masih kosong.');
+  if (!getF('hasil')) issues.push('Hasil yang dicapai belum diisi.');
+  if (!String(S.lamp.ket||'').trim()) issues.push('Keterangan dokumentasi belum tersedia.');
+  const msg = issues.length ? 'Perlu diperiksa:\\n• '+issues.join('\\n• ') : '✓ Pemeriksaan dasar selesai. Pastikan seluruh uraian sesuai fakta dan dokumentasi.';
+  alert(msg); return issues;
+}
+function unduhWord() { const issues=validasiLaporan(); if(issues.length && !confirm('Masih ada bagian yang belum lengkap. Tetap unduh Word?')) return; dl(new Blob(['﻿', buildWord()], { type: 'application/msword' }), fnama() + '.doc'); }
+function cadangkan() { dl(new Blob([JSON.stringify(S)], { type: 'application/json' }), 'Template_RHK_' + new Date().toISOString().slice(0, 10) + '.json'); }
+function cekMuat() {
+  const R = doc.getBoundingClientRect().right - 1; let bad = 0;
+  doc.querySelectorAll('.tb1 td, .tb1 th, .gal img, .kl, .idt').forEach(e => { if (e.getBoundingClientRect().right > R + 2) bad++; });
+  return bad;
+}
+function unduhPdf() {
+  const nama = { a4: 'A4', f4: 'F4', legal: 'Legal', letter: 'Letter' }[S.page] || S.page, ar = S.orient === 'portrait' ? 'tegak' : 'mendatar';
+  const old = document.title; document.title = fnama();
+  toast(`Kertas ${nama} ${ar}. Di jendela cetak: Tujuan = Simpan sebagai PDF, Skala = Default (100%).`, 7000);
+  setTimeout(() => { window.print(); setTimeout(() => document.title = old, 1500); }, 350);
+}
+$('fRestore').onchange = e => {
+  const f = e.target.files[0]; if (!f) return;
+  const fr = new FileReader();
+  fr.onload = () => {
+    try {
+      const p = JSON.parse(fr.result);
+      if (!p.sec || !p.kop) throw 0;
+      if (!confirm('Pulihkan dari file ini? Isi laporan saat ini akan diganti.')) return;
+      localStorage.setItem(KEY, JSON.stringify(p)); load(); render();
+    } catch (err) { alert('File cadangan tidak valid.'); }
+    e.target.value = '';
+  };
+  fr.readAsText(f);
+};
+function resetSemua() {
+  if (!confirm('Kembalikan template ke kondisi awal? Semua isian, logo, tanda tangan, dan foto akan dihapus.')) return;
+  try { localStorage.removeItem(KEY); } catch (e) {}
+  load(); render();
+}
+
+function applyBar(h) { $('bar').classList.toggle('hide', h); document.body.classList.toggle('tbhide', h); }
+function toggleBar() {
+  const h = !$('bar').classList.contains('hide');
+  applyBar(h);
+  try { localStorage.setItem('rhk_toolbar_hidden', h ? '1' : '0'); } catch (e) {}
+  setTimeout(fitZoom, 50);
+}
+try { applyBar(localStorage.getItem('rhk_toolbar_hidden') === '1'); } catch (e) {}
+load(); initRhkSel(); render();
+$('fTempat').value = S.ttd.tempat;
+</script>
+</body>
+</html>
