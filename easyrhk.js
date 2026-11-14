@@ -229,16 +229,40 @@
   function val(id) { return $e(id).value; }
   function btn(txt, cls, fn) { var b = h('button', { class: cls || '', type: 'button' }, txt); b.addEventListener('click', function () { b.disabled = true; Promise.resolve().then(fn).catch(function () {}).then(function () { b.disabled = false; }); }); return b; }
 
+  /* ---------- logo & merek ---------- */
+  var LOGO_INNER = "<defs><linearGradient id=\"g1@@\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"1\"><stop offset=\"0\" stop-color=\"#1d3f9e\"/><stop offset=\"1\" stop-color=\"#0891b2\"/></linearGradient><linearGradient id=\"g2@@\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop offset=\"0\" stop-color=\"#fb923c\"/><stop offset=\"1\" stop-color=\"#ea580c\"/></linearGradient><clipPath id=\"cp@@\"><rect width=\"120\" height=\"120\" rx=\"28\"/></clipPath><filter id=\"sh@@\" x=\"-20%\" y=\"-20%\" width=\"140%\" height=\"150%\"><feDropShadow dx=\"0\" dy=\"3\" stdDeviation=\"3\" flood-color=\"#0b1f4d\" flood-opacity=\".28\"/></filter></defs><rect width=\"120\" height=\"120\" rx=\"28\" fill=\"url(#g1@@)\"/><g clip-path=\"url(#cp@@)\"><circle cx=\"104\" cy=\"14\" r=\"34\" fill=\"#fff\" opacity=\".07\"/><circle cx=\"10\" cy=\"112\" r=\"30\" fill=\"#fff\" opacity=\".06\"/></g><!-- lembar laporan dengan sudut terlipat --><g filter=\"url(#sh@@)\"><path d=\"M30 20h37l23 23v53a6 6 0 0 1-6 6H30a6 6 0 0 1-6-6V26a6 6 0 0 1 6-6z\" fill=\"#fff\"/></g><path d=\"M67 20l23 23H73a6 6 0 0 1-6-6z\" fill=\"#bfdbfe\"/><!-- hati = pendampingan / kepedulian --><path d=\"M46 52.5c-5-3.6-9.5-7-9.5-11.2a5.4 5.4 0 0 1 9.5-3.5 5.4 5.4 0 0 1 9.5 3.5c0 4.2-4.5 7.6-9.5 11.2z\" fill=\"#0891b2\"/><!-- baris laporan --><rect x=\"33\" y=\"62\" width=\"40\" height=\"5\" rx=\"2.5\" fill=\"#c7d2e4\"/><rect x=\"33\" y=\"73\" width=\"30\" height=\"5\" rx=\"2.5\" fill=\"#dbe3f1\"/><rect x=\"33\" y=\"84\" width=\"22\" height=\"5\" rx=\"2.5\" fill=\"#dbe3f1\"/><!-- lencana centang = laporan selesai --><g filter=\"url(#sh@@)\"><circle cx=\"85\" cy=\"86\" r=\"19\" fill=\"url(#g2@@)\"/></g><circle cx=\"85\" cy=\"86\" r=\"19\" fill=\"none\" stroke=\"#fff\" stroke-width=\"3.5\"/><path d=\"M76 86.500l6.500 6.500L95 79.5\" fill=\"none\" stroke=\"#fff\" stroke-width=\"6\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>";
+  function logoSvg(px, pf) { return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="' + px + '" height="' + px + '" aria-hidden="true">' + LOGO_INNER.replace(/@@/g, pf) + '</svg>'; }
+  function logo(px, pf) { var sp = document.createElement('span'); sp.style.display = 'inline-flex'; sp.style.flex = 'none'; sp.innerHTML = logoSvg(px, pf); return sp; }
+  function setFavicon() {
+    var l = document.querySelector('link[rel="icon"]') || document.head.appendChild(h('link', { rel: 'icon' }));
+    l.setAttribute('type', 'image/svg+xml'); l.setAttribute('href', 'data:image/svg+xml,' + encodeURIComponent(logoSvg(64, 'fv').replace('aria-hidden="true"', '')));
+  }
+  function feat(ic, t, d) { return h('li', {}, h('span', { class: 'ic' }, ic), h('div', {}, h('b', {}, t), h('small', {}, d))); }
+  function heroPanel() {
+    return h('div', { class: 'erhk-hero' },
+      h('div', { class: 'erhk-brand' }, logo(54, 'hb'), h('div', {}, h('b', {}, 'Easy', h('span', {}, 'RHK')), h('small', {}, 'Laporan pendampingan, lebih mudah.'))),
+      h('div', { class: 'erhk-hl' }, h('h1', {}, 'Laporan RHK selesai lebih cepat dan lebih rapi.'),
+        h('p', {}, 'Dirancang untuk Wali Asuh dan Wali Asrama: pilih RHK, sesuaikan kegiatan, tambahkan foto, lalu simpan sebagai PDF atau Word.')),
+      h('ul', { class: 'erhk-ft' },
+        feat('📝', 'Isi cepat', 'Narasi tiap RHK dan shift sudah disiapkan. Anda tinggal menyesuaikan.'),
+        feat('☁️', 'Tersimpan di Drive Anda', 'Laporan dan foto masuk ke folder Google Drive milik Anda sendiri.'),
+        feat('📄', 'PDF dan Word yang rapi', 'Foto potret dan lanskap tertata, bisa langsung dikirim ke folder pilihan.')),
+      h('div', { class: 'erhk-c1' }), h('div', { class: 'erhk-c2' }),
+      h('small', { class: 'erhk-cr' }, 'Template dibuat oleh IG: @Farsidik'));
+  }
+  var TITLES = { login: ['Selamat datang kembali', 'Masuk dengan NIP dan password Anda.'], register: ['Buat akun baru', 'Cukup sekali. Setelah itu langsung bisa membuat laporan.'],
+    forgot: ['Atur ulang password', 'Kode reset dikirim ke email yang terdaftar.'], otp: ['Verifikasi email', 'Masukkan 6 digit kode yang dikirim ke email Anda.'], resetotp: ['Password baru', 'Masukkan kode dari email dan password baru Anda.'] };
+
   /* ---------- layar masuk / daftar ---------- */
   function authScreen() {
     var box = $e('erhkAuth'); if (box) box.remove();
-    var card = h('div', { class: 'erhk-card' }), wrap = h('div', { id: 'erhkAuth' }, card);
+    var card = h('div', { class: 'erhk-card' }), wrap = h('div', { id: 'erhkAuth' }, heroPanel(), h('div', { class: 'erhk-formwrap' }, card));
     document.body.appendChild(wrap);
     var tab = 'login', pendingNip = '';
     function draw(msg, ok) {
       card.innerHTML = '';
-      card.appendChild(h('h2', {}, 'EasyRHK'));
-      card.appendChild(h('p', { class: 's' }, 'Laporan RHK Wali Asuh / Wali Asrama. Foto dan dokumen Anda tersimpan di Google Drive Anda sendiri.'));
+      var ti = TITLES[tab] || TITLES.login;
+      card.appendChild(h('div', { class: 'erhk-chead' }, logo(40, 'cd'), h('div', {}, h('h2', {}, CFG.API_URL ? ti[0] : 'EasyRHK'), h('p', { class: 's' }, CFG.API_URL ? ti[1] : 'Laporan RHK Wali Asuh / Wali Asrama.'))));
       if (!CFG.API_URL) {
         card.appendChild(h('div', { class: 'erhk-msg err' }, 'Aplikasi belum dikonfigurasi (API_URL kosong di config.js). Ikuti PANDUAN_PEMASANGAN.md, atau gunakan mode lokal di bawah.'));
         card.appendChild(h('div', { class: 'row' }, btn('Lanjut tanpa akun (mode lokal, seperti v17)', 'g', function () { E.local = true; wrap.remove(); renderBar(); status('Mode lokal — tidak ada sinkron', 'warn'); })));
@@ -311,7 +335,7 @@
   /* ---------- bilah atas ---------- */
   function renderBar() {
     var old = $e('erhkBar'); if (old) old.remove();
-    var bar = h('div', { id: 'erhkBar', class: 'no-print' }, h('b', {}, 'EasyRHK'));
+    var bar = h('div', { id: 'erhkBar', class: 'no-print' }, logo(22, 'tb'), h('b', {}, 'EasyRHK'));
     if (E.session) {
       bar.appendChild(h('span', {}, 'NIP ' + E.session.user.nip));
       bar.appendChild(h('button', { class: E.driveOn ? '' : 'pri', onclick: connectDrive }, E.driveOn ? '☁ Drive terhubung' : '☁ Hubungkan Drive'));
@@ -676,13 +700,13 @@
     window.addEventListener('beforeunload', function () { if (E.dirty && E.session) { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} } });
   }
   function boot() {
-    hook(); renderBar();
+    hook(); setFavicon(); renderBar();
     var saved = null; try { saved = JSON.parse(lsGet('easyrhk_session') || 'null'); } catch (e) {}
     if (CFG.API_URL && saved && saved.token) {
       E.session = saved;
       api('me').then(function (d) { E.session.user = d.user; E.settings = d.settings || {}; lsSet('easyrhk_session', JSON.stringify(E.session)); afterLogin(false); }, function () { E.session = null; lsDel('easyrhk_session'); authScreen(); });
       // layar penutup sementara sesi diperiksa
-      var cover = h('div', { id: 'erhkAuth' }, h('div', { class: 'erhk-card' }, h('h2', {}, 'EasyRHK'), h('p', { class: 's' }, 'Memeriksa sesi…')));
+      var cover = h('div', { id: 'erhkAuth', class: 'erhk-cover' }, h('div', { class: 'erhk-card' }, h('h2', {}, 'EasyRHK'), h('p', { class: 's' }, 'Memeriksa sesi…')));
       document.body.appendChild(cover); var iv = setInterval(function () { if (E.session && $e('erhkBar') && $e('erhkSt') && $e('erhkSt').textContent) { cover.remove(); clearInterval(iv); } else if (!E.session) { cover.remove(); clearInterval(iv); } }, 150);
     } else authScreen();
   }
