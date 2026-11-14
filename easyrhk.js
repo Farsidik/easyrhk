@@ -673,8 +673,20 @@
   function fixWordGallery(html) {
     var d = new DOMParser().parseFromString(html, 'text/html'), imgs = [].slice.call(d.querySelectorAll('.gal img'));
     var sp = d.querySelector('.ttd-space'); if (sp && sp.querySelector('img')) sp.style.textAlign = 'left';   // posisi gambar tanda tangan dihitung dari tepi kiri blok
+    var tin = d.querySelector('.tin'), liveTin = document.querySelector('#doc .tin'), changed = !!sp;
+    if (tin && liveTin) {   // Word tidak mengenal "fit-content": blok dijadikan tabel rata kanan selebar isi yang terukur di layar
+      var N = Math.ceil(liveTin.getBoundingClientRect().width) + 6, al = tin.style.textAlign === 'center' ? 'center' : 'left';
+      var tb = d.createElement('table'), tr = d.createElement('tr'), td = d.createElement('td');
+      tb.setAttribute('align', 'right'); tb.setAttribute('width', String(N)); tb.setAttribute('cellpadding', '0'); tb.setAttribute('cellspacing', '0'); tb.style.cssText = 'width:' + N + 'px;border-collapse:collapse';
+      td.setAttribute('align', al); td.style.textAlign = al; td.style.padding = '0';
+      while (tin.firstChild) td.appendChild(tin.firstChild);
+      tr.appendChild(td); tb.appendChild(tr); tin.parentNode.replaceChild(tb, tin);
+      var im0 = sp && sp.querySelector('img');
+      if (im0) { var off = Math.max(0, (Number(S.ttd.x) || 0) - Math.max(0, (Number(S.ttd.bw) || 270) - N)); im0.style.marginLeft = off + 'px'; }
+      changed = true;
+    }
     var wrapHtml = function () { return '<html ' + [].slice.call(d.documentElement.attributes).map(function (a) { return a.name + '="' + a.value.replace(/"/g, '&quot;') + '"'; }).join(' ') + '>' + d.documentElement.innerHTML + '</html>'; };
-    if (!imgs.length) return sp ? wrapHtml() : html;
+    if (!imgs.length) return changed ? wrapHtml() : html;
     var live = [].slice.call(document.querySelectorAll('#doc .gal img')), L = S.lamp, n = L.cols || 3, dim = pageDim();
     var cellW = Math.floor((dim[0] - 30) * 3.7795 / n - 10);                                  // lebar isi halaman (margin 1,5 cm) dibagi kolom
     var maxH = L.mode === 'asli' ? Math.floor((dim[1] - 40) * 3.7795 * 0.45) : Math.max(60, Number(L.h) || 145);
@@ -700,16 +712,21 @@
     /* Blok tanda tangan: blok tetap di kanan, isinya (tanggal, nama, NIP) rata tengah atau rata kiri.
        Nilai lama (r/c/l) tetap dipakai apa adanya. Laporan lama yang masih "r" (bawaan) dipindah ke "rc" sekali saja. */
     var sel = $e('ttdAl');
-    if (sel) { sel.innerHTML = ''; [['rc', 'Blok kanan · teks rata tengah (disarankan)'], ['rl', 'Blok kanan · teks rata kiri'], ['r', 'Rata kanan'], ['c', 'Blok di tengah'], ['l', 'Blok di kiri']].forEach(function (o) { sel.appendChild(h('option', { value: o[0] }, o[1])); }); }
+    if (sel) { sel.innerHTML = ''; [['rl', 'Blok di kanan · nama & NIP sejajar kiri (disarankan)'], ['rc', 'Blok di kanan · nama & NIP rata tengah'], ['r', 'Rata kanan (bawaan lama)'], ['c', 'Blok di tengah'], ['l', 'Blok di kiri']].forEach(function (o) { sel.appendChild(h('option', { value: o[0] }, o[1])); }); }
     var origTtd = window.ttdHTML;
     window.ttdHTML = function () {
       var html = origTtd.apply(this, arguments), a = S.ttd && S.ttd.al;
-      if (a === 'rc') return html.replace('text-align:right;', 'text-align:center;');
-      if (a === 'rl') return html.replace('text-align:right;', 'text-align:left;');
-      return html;
+      if (a !== 'rc' && a !== 'rl') return html;
+      /* Isi blok (tanggal, nama, NIP) dibungkus kotak selebar baris terpanjang dan menempel ke kanan,
+         lalu semua baris di dalamnya rata tengah (rc) atau rata kiri (rl): rapi otomatis, berapa pun panjang nama. */
+      var spacer = '<div class="no-print" style="height:0"></div>', i = html.indexOf(spacer);
+      if (i < 0) return html;
+      html = html.slice(0, i + spacer.length) + '<div class="tin" style="text-align:' + (a === 'rc' ? 'center' : 'left') + '">' + html.slice(i + spacer.length);
+      var end = html.indexOf('<div class="sg"'); if (end < 0) end = html.lastIndexOf('</div>');
+      return html.slice(0, end) + '</div>' + html.slice(end);
     };
     var origLoad = window.load;
-    function migrateTtd() { if (S && S.ttd && !S.ttd.v2) { S.ttd.v2 = 1; if (S.ttd.al === 'r' || !S.ttd.al) { S.ttd.al = 'rc'; return true; } } return false; }
+    function migrateTtd() { if (S && S.ttd && S.ttd.v3 !== 1) { S.ttd.v3 = 1; if (!S.ttd.al || S.ttd.al === 'r' || S.ttd.al === 'rc') { S.ttd.al = 'rl'; return true; } } return false; }
     window.load = function () { origLoad.apply(this, arguments); migrateTtd(); };
     if (migrateTtd()) render();
     var origReset = window.resetSemua;

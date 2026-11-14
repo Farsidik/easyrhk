@@ -91,3 +91,11 @@
 }
 .erhk-formwrap .erhk-card .erhk-tabs button{background:transparent;box-shadow:none;color:#52627f;border:0}
 .erhk-formwrap .erhk-card .erhk-tabs button.on{background:#fff;color:#c2410c;box-shadow:0 1px 4px rgba(15,35,80,.15)}
+
+/* Blok tanda tangan: selebar baris terpanjang, menempel ke kanan */
+.tin{width:fit-content;max-width:100%;margin-left:auto}
+.tin [data-p="ttd.pre"]:empty{min-height:1.25em}
+.tin [data-p="ttd.pre"]:empty:not(:focus):before{content:""}
+.hide-allctl [contenteditable]:empty:before{content:""}
+.hide-allctl .tin [data-p="ttd.pre"]:empty{min-height:0}
+@media print{.tin [data-p="ttd.pre"]:empty{min-height:0}}
