@@ -672,7 +672,9 @@
   /* ---------- perbaikan ekspor Word: foto potret/lanskap dihitung ulang agar muat di kotaknya ---------- */
   function fixWordGallery(html) {
     var d = new DOMParser().parseFromString(html, 'text/html'), imgs = [].slice.call(d.querySelectorAll('.gal img'));
-    if (!imgs.length) return html;
+    var sp = d.querySelector('.ttd-space'); if (sp && sp.querySelector('img')) sp.style.textAlign = 'left';   // posisi gambar tanda tangan dihitung dari tepi kiri blok
+    var wrapHtml = function () { return '<html ' + [].slice.call(d.documentElement.attributes).map(function (a) { return a.name + '="' + a.value.replace(/"/g, '&quot;') + '"'; }).join(' ') + '>' + d.documentElement.innerHTML + '</html>'; };
+    if (!imgs.length) return sp ? wrapHtml() : html;
     var live = [].slice.call(document.querySelectorAll('#doc .gal img')), L = S.lamp, n = L.cols || 3, dim = pageDim();
     var cellW = Math.floor((dim[0] - 30) * 3.7795 / n - 10);                                  // lebar isi halaman (margin 1,5 cm) dibagi kolom
     var maxH = L.mode === 'asli' ? Math.floor((dim[1] - 40) * 3.7795 * 0.45) : Math.max(60, Number(L.h) || 145);
@@ -683,7 +685,7 @@
     });
     [].slice.call(d.querySelectorAll('.gal .gb')).forEach(function (g) { g.removeAttribute('style'); g.setAttribute('align', 'center'); });
     [].slice.call(d.querySelectorAll('.gal td')).forEach(function (td) { td.setAttribute('align', 'center'); td.setAttribute('valign', 'top'); });
-    return '<html ' + [].slice.call(d.documentElement.attributes).map(function (a) { return a.name + '="' + a.value.replace(/"/g, '&quot;') + '"'; }).join(' ') + '>' + d.documentElement.innerHTML + '</html>';
+    return wrapHtml();
   }
 
   /* ---------- kait ke v17 ---------- */
@@ -695,6 +697,21 @@
     var origWord = window.buildWord;
     window.buildWord = function () { var html = origWord.apply(this, arguments); try { return fixWordGallery(html); } catch (e) { return html; } };
     window.addEventListener('afterprint', function () { if (E.session && E.driveOn) say('Mau PDF langsung masuk Drive tanpa unduh? Pakai tombol "📤 PDF → Drive" di bilah atas.'); });
+    /* Blok tanda tangan: blok tetap di kanan, isinya (tanggal, nama, NIP) rata tengah atau rata kiri.
+       Nilai lama (r/c/l) tetap dipakai apa adanya. Laporan lama yang masih "r" (bawaan) dipindah ke "rc" sekali saja. */
+    var sel = $e('ttdAl');
+    if (sel) { sel.innerHTML = ''; [['rc', 'Blok kanan · teks rata tengah (disarankan)'], ['rl', 'Blok kanan · teks rata kiri'], ['r', 'Rata kanan'], ['c', 'Blok di tengah'], ['l', 'Blok di kiri']].forEach(function (o) { sel.appendChild(h('option', { value: o[0] }, o[1])); }); }
+    var origTtd = window.ttdHTML;
+    window.ttdHTML = function () {
+      var html = origTtd.apply(this, arguments), a = S.ttd && S.ttd.al;
+      if (a === 'rc') return html.replace('text-align:right;', 'text-align:center;');
+      if (a === 'rl') return html.replace('text-align:right;', 'text-align:left;');
+      return html;
+    };
+    var origLoad = window.load;
+    function migrateTtd() { if (S && S.ttd && !S.ttd.v2) { S.ttd.v2 = 1; if (S.ttd.al === 'r' || !S.ttd.al) { S.ttd.al = 'rc'; return true; } } return false; }
+    window.load = function () { origLoad.apply(this, arguments); migrateTtd(); };
+    if (migrateTtd()) render();
     var origReset = window.resetSemua;
     window.resetSemua = function () { origReset.apply(this, arguments); if (S && S.erhk) { delete S.erhk; } };
     window.addEventListener('beforeunload', function () { if (E.dirty && E.session) { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} } });
