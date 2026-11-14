@@ -99,3 +99,22 @@
 .hide-allctl [contenteditable]:empty:before{content:""}
 .hide-allctl .tin [data-p="ttd.pre"]:empty{min-height:0}
 @media print{.tin [data-p="ttd.pre"]:empty{min-height:0}}
+
+/* Pilihan jenis laporan setelah masuk */
+#erhkChoose{position:fixed;inset:0;z-index:9998;display:flex;align-items:center;justify-content:center;padding:12px;overflow:auto;font-family:Arial,sans-serif;background:linear-gradient(135deg,rgba(18,48,111,.92),rgba(8,145,178,.88))}
+@media print{#erhkChoose{display:none!important}}
+.erhk-card.erhk-choose{width:min(820px,100%);padding:26px 26px 22px;border-radius:18px}
+.erhk-chead{display:flex;gap:12px;align-items:center;margin-bottom:14px}
+.erhk-chead h2{font-size:21px}
+.erhk-kinds{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.erhk-card button.erhk-kind{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:6px;text-align:left;background:#fff;color:#12306f;border:2px solid #dbe4f3;border-radius:16px;padding:20px 18px 16px;cursor:pointer;transition:border-color .15s,box-shadow .15s,transform .15s;font-weight:400}
+.erhk-card button.erhk-kind:hover,.erhk-card button.erhk-kind:focus-visible{border-color:#0891b2;box-shadow:0 8px 24px rgba(8,145,178,.18);transform:translateY(-2px);outline:none}
+.erhk-card button.erhk-kind.last{border-color:#fb923c}
+.erhk-kind .ic{font-size:34px;line-height:1}
+.erhk-kind b{font-size:18px;color:#12306f}
+.erhk-kind small{font-size:12.5px;color:#475569;line-height:1.4}
+.erhk-kind ul{margin:4px 0 6px;padding-left:18px;font-size:12px;color:#334155;line-height:1.5}
+.erhk-kind em{margin-top:auto;font-style:normal;font-weight:700;font-size:13px;color:#ea580c}
+.erhk-kind .tag{position:absolute;top:10px;right:10px;font-style:normal;font-size:10.5px;font-weight:700;background:#fff7ed;color:#c2410c;border:1px solid #fdba74;border-radius:20px;padding:2px 8px}
+@media (max-width:640px){.erhk-kinds{grid-template-columns:1fr}}
+#erhkBar .kindtag{background:#1d3f9e;color:#fff;border-radius:20px;padding:2px 10px;font-size:11px;font-weight:700}

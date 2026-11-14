@@ -4,10 +4,11 @@
 (function () {
   'use strict';
   var CFG = window.EASYRHK_CONFIG || {};
+  var KIND = window.EASYRHK_KIND === 'harian' ? 'harian' : 'rhk';   // halaman ini: laporan RHK (index.html) atau laporan harian (harian.html)
   var SCOPE = 'https://www.googleapis.com/auth/drive.file';
   var DRIVE = 'https://www.googleapis.com/drive/v3', UPLOAD = 'https://www.googleapis.com/upload/drive/v3';
   var E = { session: null, settings: {}, tokenClient: null, gtoken: null, gexp: 0, driveOn: false, local: false,
-            busy: false, dirty: false, timer: null, imgMap: {}, imgCache: {}, dests: [], destFoto: {} };
+            kind: KIND, busy: false, dirty: false, timer: null, imgMap: {}, imgCache: {}, dests: [], destFoto: {} };
   window.EasyRHK = E;
 
   /* ---------- util ---------- */
@@ -99,7 +100,12 @@
         .then(function (r) { return r.json(); }).then(function (f) { return f.id; });
     });
   }
-  var TPL_NAME = { waliAsuh: 'Laporan Wali Asuh', waliAsrama: 'Laporan Wali Asrama' };
+  var TPL_NAME = { waliAsuh: 'Laporan Wali Asuh', waliAsrama: 'Laporan Wali Asrama', harian: 'Laporan Harian' };
+  /** Kunci folder jenis laporan yang sedang dibuka. */
+  function fkey() { return KIND === 'harian' ? 'harian' : (S.role === 'waliAsrama' ? 'waliAsrama' : 'waliAsuh'); }
+  /** Simpan salinan lokal di browser (laporan RHK memakai localStorage; laporan harian sudah disimpan halaman sendiri di IndexedDB). */
+  function cacheState() { if (KIND === 'rhk') { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} } }
+  /** Tanggal acuan & judul berkas. */
   /** Pastikan folder ada (pulihkan otomatis bila terhapus/dipindah ke sampah). Mengembalikan {root, foto, tpl}. */
   function ensureFolders(role, destId) {
     var f = (E.settings.folders = E.settings.folders || {}), changed = false;
@@ -171,11 +177,13 @@
 
   /* ---------- sinkronisasi laporan ---------- */
   function periodOf() {
+    if (KIND === 'harian') return /^\d{4}-\d{2}$/.test(S.bulan || '') ? S.bulan : new Date().toISOString().slice(0, 7);
     var d = (S.rows || []).map(function (r) { return r.date; }).filter(Boolean).sort()[0] || (typeof todayS !== 'undefined' ? todayS : new Date().toISOString().slice(0, 10));
     return d.slice(0, 7);
   }
   function titleOf(period) {
     var p = period.split('-'), nm = (typeof BLN !== 'undefined' ? BLN[Number(p[1]) - 1] : p[1]) + ' ' + p[0];
+    if (KIND === 'harian') return 'Laporan Harian — ' + (typeof BLN !== 'undefined' ? BLN[Number(p[1]) - 1] : p[1]) + ' ' + p[0];
     return (S.rhk || 'Laporan') + ' — ' + (S.role === 'waliAsrama' ? 'Wali Asrama' : 'Wali Asuh') + ' — ' + nm;
   }
   function onSave() { if (E.local || !E.session) return; if (!E.driveOn) { status('Tersimpan di browser · Drive belum terhubung', 'warn'); return; } E.dirty = true; clearTimeout(E.timer); E.timer = setTimeout(syncNow, 4000); status('Menunggu sinkron…', ''); }
@@ -183,23 +191,23 @@
     if (E.local || !E.session) return Promise.resolve();
     if (E.busy) { E.dirty = true; return Promise.resolve(); }
     clearTimeout(E.timer); E.busy = true; E.dirty = false; status('Menyimpan ke Drive…', '');
-    var role = S.role === 'waliAsrama' ? 'waliAsrama' : 'waliAsuh', period = periodOf(), erhk = (S.erhk = S.erhk || {});
+    var role = fkey(), period = periodOf(), erhk = (S.erhk = S.erhk || {});
     return getToken(false).then(function () { return ensureFolders(role, erhk.dest); })
       .then(function (fo) { return moveIfNeeded(erhk, fo.tpl).then(function () { return fo; }); })
       .then(function (fo) {
         return externalize(S, fo.foto).then(function (clone) {
           var title = erhk.title || titleOf(period); clone.erhk = { reportId: erhk.reportId || '', title: title };
-          var body = JSON.stringify({ app: 'EasyRHK', v: 1, state: clone });
+          var body = JSON.stringify({ app: 'EasyRHK', v: 1, kind: KIND, state: clone });
           return multipart({ id: erhk.fileId || null, name: title.replace(/[\\/:*?"<>|]/g, '-') + '.json', parent: fo.tpl, mime: 'application/json', body: body })
             .catch(function (e) { if (e.status === 404 && erhk.fileId) { erhk.fileId = null; return multipart({ name: title.replace(/[\\/:*?"<>|]/g, '-') + '.json', parent: fo.tpl, mime: 'application/json', body: body }); } throw e; })
             .then(function (fileId) {
               erhk.fileId = fileId; erhk.parentId = fo.tpl;
-              var pay = { title: title, period: period, rhk: S.rhk || '', role: role, driveFileId: fileId, reportId: erhk.reportId || undefined };
+              var pay = { title: title, period: period, rhk: KIND === 'harian' ? 'HARIAN' : (S.rhk || ''), role: role === 'waliAsrama' ? 'waliAsrama' : 'waliAsuh', driveFileId: fileId, reportId: erhk.reportId || undefined };
               return api('upsertReport', pay).catch(function (e) { if (e.code === 'NOT_FOUND') { delete pay.reportId; return api('upsertReport', pay); } throw e; });
             });
         });
       })
-      .then(function (r) { erhk.reportId = r.report.reportId; erhk.title = r.report.title; try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} status('Tersimpan di Drive ✓ ' + new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }), 'ok'); })
+      .then(function (r) { erhk.reportId = r.report.reportId; erhk.title = r.report.title; cacheState(); status('Tersimpan di Drive ✓ ' + new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }), 'ok'); })
       .catch(function (e) {
         if (e && e.message && /Izin|diblokir|GOOGLE_CLIENT/.test(e.message)) { E.driveOn = false; renderBar(); status('Perlu hubungkan Drive (klik tombol)', 'warn'); }
         else status('Gagal sinkron: ' + ((e && e.message) || 'kesalahan') + ' — data aman di browser', 'err');
@@ -241,8 +249,8 @@
   function heroPanel() {
     return h('div', { class: 'erhk-hero' },
       h('div', { class: 'erhk-brand' }, logo(54, 'hb'), h('div', {}, h('b', {}, 'Easy', h('span', {}, 'RHK')), h('small', {}, 'Laporan pendampingan, lebih mudah.'))),
-      h('div', { class: 'erhk-hl' }, h('h1', {}, 'Laporan RHK selesai lebih cepat dan lebih rapi.'),
-        h('p', {}, 'Dirancang untuk Wali Asuh dan Wali Asrama: pilih RHK, sesuaikan kegiatan, tambahkan foto, lalu simpan sebagai PDF atau Word.')),
+      h('div', { class: 'erhk-hl' }, h('h1', {}, 'Laporan RHK dan Laporan Harian selesai lebih cepat dan lebih rapi.'),
+        h('p', {}, 'Dirancang untuk Wali Asuh dan Wali Asrama: pilih jenis laporan, sesuaikan kegiatan, tambahkan foto, lalu simpan sebagai PDF atau Word.')),
       h('ul', { class: 'erhk-ft' },
         feat('📝', 'Isi cepat', 'Narasi tiap RHK dan shift sudah disiapkan. Anda tinggal menyesuaikan.'),
         feat('☁️', 'Tersimpan di Drive Anda', 'Laporan dan foto masuk ke folder Google Drive milik Anda sendiri.'),
@@ -317,28 +325,75 @@
     afterLogin(true);
   }
 
-  function afterLogin(fresh) {
-    var uid = E.session.user.userId, userKey = 'rhk_template_u_' + uid;
-    try { E.imgMap = JSON.parse(lsGet(uk('imgmap')) || '{}'); } catch (e) { E.imgMap = {}; }
-    loadDests();
-    var legacy = lsGet('rhk_template_v1');
+  function ssGet(k) { try { return sessionStorage.getItem(k); } catch (e) { return null; } }
+  function ssSet(k, v) { try { sessionStorage.setItem(k, v); } catch (e) {} }
+  /** Muat laporan milik akun ini ke halaman (RHK: localStorage, Harian: IndexedDB). */
+  function loadOwn(uid) {
+    if (KIND === 'harian') {
+      KEY = 'rhk_harian_u_' + uid;
+      return Promise.resolve().then(function () { return idbGet(KEY); }).then(function (own) {
+        if (own) return;
+        return idbGet('rhk_harian_v1').then(function (old) {
+          if (old && confirm('Ditemukan data laporan harian lama di browser ini. Impor ke akun Anda sekarang?\n(Pilih Batal untuk memulai laporan kosong.)')) return idbSet(KEY, old);
+        });
+      }).catch(function () {}).then(function () { return load(); }).then(function () { render(); initBar(); });
+    }
+    var userKey = 'rhk_template_u_' + uid, legacy = lsGet('rhk_template_v1');
     if (!lsGet(userKey) && legacy && confirm('Ditemukan data template v17 lama di browser ini. Impor ke akun Anda sekarang?\n(Pilih Batal untuk memulai laporan kosong.)')) lsSet(userKey, legacy);
     KEY = userKey; load(); initRhkSel(); render(); $('fTempat').value = S.ttd.tempat;
-    E.driveOn = lsGet(uk('drive')) === '1' && !!E.gtoken;
-    renderBar();
-    status('Masuk sebagai NIP ' + E.session.user.nip, '');
-    if (lsGet(uk('drive')) === '1') getToken(false).then(function () { status('Drive terhubung ✓', 'ok'); }, function () { status('Klik "Hubungkan Drive" untuk sinkron', 'warn'); });
-    else status('Klik "Hubungkan Drive" agar laporan & foto tersimpan di Drive Anda', 'warn');
-    api('me').then(function (d) { E.settings = d.settings || {}; });
+    return Promise.resolve();
+  }
+  function afterLogin(fresh) {
+    var uid = E.session.user.userId;
+    try { E.imgMap = JSON.parse(lsGet(uk('imgmap')) || '{}'); } catch (e) { E.imgMap = {}; }
+    loadDests();
+    var pend = null; try { pend = JSON.parse(lsGet('easyrhk_pending_open') || 'null'); } catch (e) {}
+    if (pend) lsDel('easyrhk_pending_open');
+    loadOwn(uid).then(function () {
+      E.driveOn = lsGet(uk('drive')) === '1' && !!E.gtoken;
+      renderBar();
+      status('Masuk sebagai NIP ' + E.session.user.nip, '');
+      if (lsGet(uk('drive')) === '1') getToken(false).then(function () { status('Drive terhubung ✓', 'ok'); }, function () { status('Klik "Hubungkan Drive" untuk sinkron', 'warn'); });
+      else status('Klik "Hubungkan Drive" agar laporan & foto tersimpan di Drive Anda', 'warn');
+      api('me').then(function (d) { E.settings = d.settings || {}; });
+      if (pend && pend.reportId && kindOf(pend) === KIND) { ssSet('easyrhk_kind_ok', '1'); openReport(pend, null, null, true); }
+      else if (fresh || !ssGet('easyrhk_kind_ok')) chooseKind();
+    });
+  }
+  function kindOf(r) { return r && r.rhk === 'HARIAN' ? 'harian' : 'rhk'; }
+  var KIND_PAGE = { rhk: 'index.html', harian: 'harian.html' };
+  var KIND_NAME = { rhk: 'Laporan RHK', harian: 'Laporan Harian' };
+  /** Pilihan jenis laporan setelah masuk. */
+  function chooseKind() {
+    var old = $e('erhkChoose'); if (old) old.remove();
+    var last = lsGet('easyrhk_kind') || KIND;
+    function pick(k) {
+      lsSet('easyrhk_kind', k); ssSet('easyrhk_kind_ok', '1');
+      if (k === KIND) { var c = $e('erhkChoose'); if (c) c.remove(); return; }
+      if (E.dirty && E.session) syncNow().then(function () { location.href = KIND_PAGE[k]; }); else location.href = KIND_PAGE[k];
+    }
+    function card(k, ic, t, d, pts) {
+      return h('button', { type: 'button', class: 'erhk-kind' + (last === k ? ' last' : ''), onclick: function () { pick(k); } },
+        h('span', { class: 'ic' }, ic), h('b', {}, t), h('small', {}, d), h('ul', {}, pts.map(function (x) { return h('li', {}, x); })),
+        h('em', {}, k === KIND ? 'Lanjut di halaman ini →' : 'Buka →'), last === k ? h('i', { class: 'tag' }, 'Terakhir dipakai') : null);
+    }
+    var cover = h('div', { id: 'erhkChoose', class: 'erhk-cover' }, h('div', { class: 'erhk-card erhk-choose' },
+      h('div', { class: 'erhk-chead' }, logo(40, 'ch'), h('div', {}, h('h2', {}, 'Mau mengerjakan laporan apa?'), h('p', { class: 's' }, E.session ? 'Masuk sebagai NIP ' + E.session.user.nip + '. Jenis laporan bisa diganti kapan saja lewat tombol di bilah atas.' : 'Jenis laporan bisa diganti kapan saja lewat tombol di bilah atas.'))),
+      h('div', { class: 'erhk-kinds' },
+        card('rhk', '📝', 'Laporan RHK', 'Satu laporan per kegiatan/RHK Wali Asuh atau Wali Asrama.', ['Narasi per RHK dan shift sudah disiapkan', 'Lampiran tabel dan dokumentasi foto', 'PDF/Word langsung ke Drive']),
+        card('harian', '📅', 'Laporan Harian', 'Laporan kegiatan harian dalam satu bulan.', ['Tabel tanggal, kegiatan, rincian, dan foto', 'Satu bulan penuh, tanda tangan + Kepala Sekolah', 'PDF/Word langsung ke Drive']))));
+    cover.addEventListener('keydown', function (ev) { if (ev.key === 'Escape') cover.remove(); });
+    document.body.appendChild(cover);
   }
 
   /* ---------- bilah atas ---------- */
   function renderBar() {
     var old = $e('erhkBar'); if (old) old.remove();
-    var bar = h('div', { id: 'erhkBar', class: 'no-print' }, logo(22, 'tb'), h('b', {}, 'EasyRHK'));
+    var bar = h('div', { id: 'erhkBar', class: 'no-print' }, logo(22, 'tb'), h('b', {}, 'EasyRHK'), h('span', { class: 'kindtag', title: 'Jenis laporan yang sedang dibuka' }, KIND_NAME[KIND]));
     if (E.session) {
       bar.appendChild(h('span', {}, 'NIP ' + E.session.user.nip));
       bar.appendChild(h('button', { class: E.driveOn ? '' : 'pri', onclick: connectDrive }, E.driveOn ? '☁ Drive terhubung' : '☁ Hubungkan Drive'));
+      bar.appendChild(h('button', { onclick: chooseKind, title: 'Pindah antara Laporan RHK dan Laporan Harian' }, '🔀 Jenis laporan'));
       bar.appendChild(h('button', { onclick: openReports }, '📚 Laporan saya'));
       bar.appendChild(h('button', { onclick: newReport }, '➕ Laporan baru'));
       bar.appendChild(h('button', { onclick: openFolders }, '📁 Folder Drive'));
@@ -352,7 +407,7 @@
       if (E.session.user.isAdmin) bar.appendChild(h('button', { onclick: openAdmin }, '🛡 Admin'));
       bar.appendChild(h('button', { onclick: openAccount }, '👤 Akun'));
       bar.appendChild(h('button', { onclick: logout }, 'Keluar'));
-    } else { bar.appendChild(h('span', { id: 'erhkSt' }, 'Mode lokal')); }
+    } else { bar.appendChild(h('span', { id: 'erhkSt' }, 'Mode lokal')); bar.appendChild(h('button', { onclick: chooseKind, title: 'Pindah antara Laporan RHK dan Laporan Harian' }, '🔀 Jenis laporan')); }
     var top = $e('top'); top.insertBefore(bar, top.firstChild); syncDestSel();
   }
   function logout() {
@@ -363,7 +418,7 @@
   /* ---------- Laporan saya ---------- */
   function openReports() {
     var list = h('div', { class: 'erhk-list' }), m = msgBox();
-    var q = h('input', { id: 'rq', type: 'text', placeholder: 'Cari judul/RHK…' }), per = h('input', { id: 'rp', type: 'month' });
+    var q = h('input', { id: 'rq', type: 'text', placeholder: 'Cari judul/RHK/harian…' }), per = h('input', { id: 'rp', type: 'month' });
     var mod = modal([h('button', { class: 'x erhk-x', onclick: function () { mod.remove(); } }, '×'), h('h2', {}, 'Laporan saya'),
       h('p', { class: 's' }, 'Isi laporan ada di Google Drive Anda; di sini hanya daftar & pencarian.'),
       h('div', { class: 'row' }, q, per, btn('Cari', 'g', load)), list, m], true);
@@ -372,27 +427,40 @@
       return api('listReports', { q: q.value, period: per.value }).then(function (d) {
         list.innerHTML = ''; if (!d.reports.length) list.appendChild(h('div', { class: 'erhk-item' }, 'Belum ada laporan.'));
         d.reports.forEach(function (r) {
-          list.appendChild(h('div', { class: 'erhk-item' }, h('div', { class: 't' }, h('b', {}, r.title), h('small', {}, (r.period || '-') + ' · diubah ' + fmtDate(r.updated))),
+          list.appendChild(h('div', { class: 'erhk-item' }, h('div', { class: 't' }, h('b', {}, r.title), h('small', {}, KIND_NAME[kindOf(r)] + ' · ' + (r.period || '-') + ' · diubah ' + fmtDate(r.updated))),
             btn('Buka', '', function () { return openReport(r, mod, m); }), btn('Hapus', 'd', function () { return delReport(r, load, m); })));
         });
       }, function (e) { list.textContent = ''; showMsg(m, e.message, false); });
     }
     load();
   }
-  function openReport(r, mod, m) {
-    if (!confirm('Buka laporan ini? Perubahan di layar saat ini akan disimpan dulu.')) return Promise.resolve();
-    showMsg(m, 'Mengunduh dari Drive…', true);
+  /** Pasang isi laporan ke halaman sesuai jenisnya. */
+  function applyState(state) {
+    if (KIND === 'harian') return Promise.resolve().then(function () { merge(state); return save(); }).then(function () { render(); initBar(); });
+    lsSet(KEY, JSON.stringify(state)); load(); initRhkSel(); render(); $('fTempat').value = S.ttd.tempat; return Promise.resolve();
+  }
+  function openReport(r, mod, m, quiet) {
+    var k = kindOf(r), note = function (t, ok) { if (m) showMsg(m, t, ok); else status(t, ok ? '' : 'err'); };
+    if (k !== KIND) {   // laporan jenis lain: pindah halaman, lalu dibuka otomatis di sana
+      if (!confirm('Ini ' + KIND_NAME[k] + '. Pindah ke halaman ' + KIND_NAME[k] + ' dan membukanya?')) return Promise.resolve();
+      lsSet('easyrhk_pending_open', JSON.stringify(r)); lsSet('easyrhk_kind', k); ssSet('easyrhk_kind_ok', '1');
+      return (E.dirty ? syncNow() : Promise.resolve()).then(function () { location.href = KIND_PAGE[k]; });
+    }
+    if (!quiet && !confirm('Buka laporan ini? Perubahan di layar saat ini akan disimpan dulu.')) return Promise.resolve();
+    note('Mengunduh dari Drive…', true);
     return (E.dirty ? syncNow() : Promise.resolve()).then(function () { return getToken(true); })
       .then(function () { return driveFetch(DRIVE + '/files/' + encodeURIComponent(r.driveFileId) + '?alt=media'); }).then(function (x) { return x.json(); })
       .then(function (pkg) {
-        if (!pkg || pkg.app !== 'EasyRHK' || !pkg.state || !pkg.state.sec || !pkg.state.kop) throw { message: 'Berkas bukan laporan EasyRHK yang valid.' };
+        var okPkg = pkg && pkg.app === 'EasyRHK' && pkg.state && pkg.state.kop && (KIND === 'harian' ? Array.isArray(pkg.state.rows) : !!pkg.state.sec);
+        if (!okPkg) throw { message: 'Berkas bukan ' + KIND_NAME[KIND] + ' EasyRHK yang valid.' };
         return hydrate(pkg.state).then(function (missing) {
           pkg.state.erhk = Object.assign({}, pkg.state.erhk, { reportId: r.reportId, title: r.title, fileId: r.driveFileId });
-          lsSet(KEY, JSON.stringify(pkg.state)); load(); initRhkSel(); render(); $('fTempat').value = S.ttd.tempat;
-          mod.remove(); say(missing ? '✓ Laporan dibuka (' + missing + ' gambar tidak ditemukan di Drive)' : '✓ Laporan dibuka');
+          return applyState(pkg.state).then(function () {
+            if (mod) mod.remove(); say(missing ? '✓ Laporan dibuka (' + missing + ' gambar tidak ditemukan di Drive)' : '✓ Laporan dibuka');
+          });
         });
       }).catch(function (e) {
-        showMsg(m, e.status === 404 ? 'Berkas tidak ditemukan di Drive. Pastikan Anda menghubungkan akun Google yang sama seperti saat menyimpan, dan berkas belum dihapus.' : (e.message || 'Gagal membuka.'), false);
+        note(e.status === 404 ? 'Berkas tidak ditemukan di Drive. Pastikan Anda menghubungkan akun Google yang sama seperti saat menyimpan, dan berkas belum dihapus.' : (e.message || 'Gagal membuka.'), false);
       });
   }
   function delReport(r, reload, m) {
@@ -405,8 +473,14 @@
   function newReport() {
     if (!confirm('Mulai laporan baru? Laporan saat ini disimpan dulu. Logo, tanda tangan, kop, dan template Anda dipertahankan.')) return;
     save(); (E.dirty ? syncNow() : Promise.resolve()).then(function () {
-      var keep = { kop: S.kop, ttd: S.ttd, role: S.role, roleTpls: S.roleTpls, font: S.font, fs: S.fs, page: S.page, orient: S.orient, ctlMode: S.ctlMode };
-      lsSet(KEY, JSON.stringify(keep)); load(); initRhkSel(); render(); $('fTempat').value = S.ttd.tempat; say('✓ Laporan baru dimulai');
+      var keep;
+      if (KIND === 'harian') {
+        keep = {}; ['kop', 'ttd', 'ks', 'id', 'L', 'R', 'logo', 'font', 'fs', 'page', 'orient', 'ctlMode', 'ttdAl', 'tpl', 'cols', 'mode', 'h', 'wk', 'auto'].forEach(function (k) { if (S[k] !== undefined) keep[k] = S[k]; });
+        if (keep.ttd) keep.ttd = Object.assign({}, keep.ttd, { l1: String(keep.ttd.l1 || 'Cilacap, ').split(',')[0] + ', ' + tglLabel(ym0 + '-' + lastDay(ym0)) });
+        return applyState(keep).then(function () { say('✓ Laporan baru dimulai'); });
+      }
+      keep = { kop: S.kop, ttd: S.ttd, role: S.role, roleTpls: S.roleTpls, font: S.font, fs: S.fs, page: S.page, orient: S.orient, ctlMode: S.ctlMode };
+      return applyState(keep).then(function () { say('✓ Laporan baru dimulai'); });
     });
   }
 
@@ -418,13 +492,13 @@
     function draw() {
       body.innerHTML = ''; var f = (E.settings.folders = E.settings.folders || {});
       body.appendChild(destSection(m, draw)); body.appendChild(h('h3', {}, 'Folder otomatis EasyRHK'));
-      [['root', 'Folder utama'], ['foto', 'Foto'], ['waliAsuh', 'Template Wali Asuh'], ['waliAsrama', 'Template Wali Asrama']].forEach(function (x) {
+      [['root', 'Folder utama'], ['foto', 'Foto'], ['waliAsuh', 'Template Wali Asuh'], ['waliAsrama', 'Template Wali Asrama'], ['harian', 'Laporan Harian']].forEach(function (x) {
         var cur = f[x[0]];
         body.appendChild(h('div', { class: 'erhk-item' }, h('div', { class: 't' }, h('b', {}, x[1]), h('small', {}, cur ? 'Folder: ' + cur.name : 'Belum dibuat (otomatis dibuat saat pertama menyimpan)')),
           cur ? h('a', { href: 'https://drive.google.com/drive/folders/' + encodeURIComponent(cur.id), target: '_blank', rel: 'noopener' }, 'Buka') : null,
           x[0] === 'root' ? null : btn('Ganti nama folder…', 'g', function () {
             var nm = prompt('Nama folder baru untuk "' + x[1] + '" (dibuat di dalam folder EasyRHK):', cur ? cur.name : x[1]); if (!nm || !nm.trim()) return Promise.resolve();
-            return getToken(true).then(function () { return ensureFolders(S.role === 'waliAsrama' ? 'waliAsrama' : 'waliAsuh'); })
+            return getToken(true).then(function () { return ensureFolders(fkey()); })
               .then(function () { return makeFolder(nm.trim().slice(0, 80), f.root.id); })
               .then(function (id) { f[x[0]] = { id: id, name: nm.trim().slice(0, 80) }; return api('saveSettings', { settings: { folders: f } }); })
               .then(function (r) { E.settings = r.settings; showMsg(m, 'Folder diperbarui. Laporan berikutnya masuk ke folder ini.', true); draw(); }, function (e) { showMsg(m, e.message, false); });
@@ -564,8 +638,7 @@
 
   /* ---------- unggah hasil ke Drive ---------- */
   function targetFolder() {
-    var role = S.role === 'waliAsrama' ? 'waliAsrama' : 'waliAsuh';
-    return ensureFolders(role, S.erhk && S.erhk.dest).then(function (fo) { return fo.tpl; });
+    return ensureFolders(fkey(), S.erhk && S.erhk.dest).then(function (fo) { return fo.tpl; });
   }
   function uploadBlob(blob, name, mime) {
     if (!E.session || E.local) { alert('Masuk dan hubungkan Drive dulu.'); return Promise.resolve(); }
@@ -596,7 +669,7 @@
     return Promise.all([window.html2canvas ? 1 : loadScript('vendor/html2canvas.min.js'), (window.jspdf && window.jspdf.jsPDF) ? 1 : loadScript('vendor/jspdf.umd.min.js')]);
   }
   /** Titik potong halaman: hanya di sela blok (baris tabel, paragraf, foto), tidak memotong tengah teks/foto. */
-  function pageBreaks(clone, pageH) {
+  function pageBreaks(clone, pageH, rep) {
     var base = clone.getBoundingClientRect().top, total = clone.scrollHeight, atoms = [], forced = [], heads = [];
     [].slice.call(clone.querySelectorAll('.hd, .it > table.kv')).forEach(function (el) { var r = el.getBoundingClientRect(); if (r.height > 1) heads.push([r.top - base, r.bottom - base]); });
     [].slice.call(clone.querySelectorAll('*')).forEach(function (el) {
@@ -607,15 +680,15 @@
     });
     var cuts = [0], top = 0, guard = 0;
     while (top < total - 2 && guard++ < 200) {
-      var limit = top + pageH, f = forced.filter(function (y) { return y > top + 5 && y <= limit; }).sort(function (a, b) { return a - b; })[0], cut;
+      var cap = (rep && top > rep.hBot + 0.5 && top < rep.tBot - 2) ? pageH - rep.h : pageH, limit = top + cap, f = forced.filter(function (y) { return y > top + 5 && y <= limit; }).sort(function (a, b) { return a - b; })[0], cut;
       if (f !== undefined) cut = f;
       else if (limit >= total) cut = total;
       else {
-        var cand = atoms.map(function (a) { return a[0]; }).concat(atoms.map(function (a) { return a[1]; })).filter(function (y) { return y > top + pageH * 0.3 && y <= limit; }).sort(function (a, b) { return b - a; });
+        var cand = atoms.map(function (a) { return a[0]; }).concat(atoms.map(function (a) { return a[1]; })).filter(function (y) { return y > top + cap * 0.3 && y <= limit; }).sort(function (a, b) { return b - a; });
         cut = limit;
         for (var i = 0; i < cand.length; i++) { var y = cand[i]; if (!atoms.some(function (a) { return a[0] < y - 0.5 && a[1] > y + 0.5; })) { cut = y; break; } }
       }
-      heads.forEach(function (hh) { if (f === undefined && cut < total && hh[1] > cut - 8 && hh[1] <= cut + 8 && hh[0] > top + pageH * 0.3) cut = hh[0]; });   // judul bagian/sub-judul ikut pindah ke halaman berikutnya
+      heads.forEach(function (hh) { if (f === undefined && cut < total && hh[1] > cut - 8 && hh[1] <= cut + 8 && hh[0] > top + cap * 0.3) cut = hh[0]; });   // judul bagian/sub-judul ikut pindah ke halaman berikutnya
       cuts.push(cut); top = cut;
     }
     cuts[cuts.length - 1] = Math.max(cuts[cuts.length - 1], total);
@@ -623,8 +696,9 @@
   }
   /** Salinan laporan yang tersembunyi + titik potong halaman (dipakai kedua jenis PDF). */
   function prepPdf() {
-    var dim = pageDim(), pw = dim[0], ph = dim[1], PX = 3.7795, cwMm = pw - 30, chMm = ph - 24, cwPx = Math.round(cwMm * PX), holder;
-    var P = { pw: pw, ph: ph, PX: PX, cwMm: cwMm, chMm: chMm, cwPx: cwPx };
+    var dim = pageDim(), pw = dim[0], ph = dim[1], PX = 3.7795, M = KIND === 'harian' ? { x: 10, t: 10, b: 12 } : { x: 15, t: 12, b: 12 };   // sama dengan @page template
+    var cwMm = pw - 2 * M.x, chMm = ph - M.t - M.b, cwPx = Math.round(cwMm * PX), holder;
+    var P = { pw: pw, ph: ph, PX: PX, cwMm: cwMm, chMm: chMm, cwPx: cwPx, M: M };
     return loadPdfLibs().then(function () {
       holder = h('div', { style: 'position:absolute;left:-99999px;top:0;width:' + cwPx + 'px;background:#fff' });
       holder.appendChild(h('style', {}, '[contenteditable]:empty:before{content:""!important}[contenteditable]{outline:none!important}.sg{outline:none!important}.gb{background:none!important}.lamp{margin-top:0!important}'));
@@ -633,17 +707,22 @@
       [].slice.call(clone.querySelectorAll('.no-print,.pg,.add,.ctl')).forEach(function (n) { n.remove(); });   // tombol/isian penyunting tidak ikut tercetak, sama seperti aturan cetak v17
       holder.appendChild(clone); document.body.appendChild(holder);
       var imgs = [].slice.call(clone.querySelectorAll('img')).map(function (im) { return im.complete ? 1 : new Promise(function (r) { im.onload = im.onerror = r; }); });
-      return Promise.all(imgs).then(function () { P.clone = clone; P.cuts = pageBreaks(clone, chMm * PX); P.holder = holder; return P; });
+      return Promise.all(imgs).then(function () { P.clone = clone; P.holder = holder;
+        var th = clone.querySelector('table.tb1 thead'), tbl = th && th.closest('table');   // judul kolom tabel diulang di tiap halaman lanjutan
+        if (th && tbl && th.getBoundingClientRect().height > 1) { var b0 = clone.getBoundingClientRect().top, ra = th.getBoundingClientRect(), rt = tbl.getBoundingClientRect(); P.rep = { hTop: ra.top - b0, hBot: ra.bottom - b0, h: ra.height, tBot: rt.bottom - b0 }; }
+        P.cuts = pageBreaks(clone, chMm * PX, P.rep); return P; });
     });
   }
   /** Membaca tata letak yang sudah dihitung browser: baris teks (beserta gaya), garis/bingkai, dan gambar. */
   function collectLayout(clone) {
-    var b0 = clone.getBoundingClientRect(), L = { texts: [], rects: [], imgs: [] }, ctx = document.createElement('canvas').getContext('2d'), dcache = {};
+    var b0 = clone.getBoundingClientRect(), L = { texts: [], rects: [], imgs: [], fills: [] }, ctx = document.createElement('canvas').getContext('2d'), dcache = {};
     function rgb(str) { var m = /rgba?\(([^)]+)\)/.exec(str || ''); if (!m) return [0, 0, 0]; var p = m[1].split(',').map(parseFloat); return [p[0] || 0, p[1] || 0, p[2] || 0]; }
     function descent(font, fs) { if (dcache[font] != null) return dcache[font]; var d = 0.21; try { ctx.font = font; var m = ctx.measureText('Hg'); if (m.fontBoundingBoxDescent) d = m.fontBoundingBoxDescent / fs; } catch (e) {} return (dcache[font] = d); }
     [].slice.call(clone.querySelectorAll('*')).forEach(function (el) {
       var cs = getComputedStyle(el), r = el.getBoundingClientRect(); if (cs.display === 'none' || r.width <= 0 || r.height <= 0) return;
       var x = r.left - b0.left, y = r.top - b0.top;
+      var bg = /rgba?\(/.test(cs.backgroundColor) ? rgb(cs.backgroundColor) : null, ba = /rgba\(/.test(cs.backgroundColor) ? parseFloat(cs.backgroundColor.split(',')[3]) : 1;
+      if (bg && ba > 0.5 && el !== clone && !el.classList.contains('gb') && !(bg[0] > 250 && bg[1] > 250 && bg[2] > 250)) L.fills.push({ x: x, y: y, w: r.width, h: r.height, c: bg });
       if (el.tagName === 'IMG') L.imgs.push({ el: el, x: x, y: y, w: r.width, h: r.height, fit: cs.objectFit });
       [['Top', x, y, r.width, 0], ['Bottom', x, r.bottom - b0.top, r.width, 1], ['Left', x, y, 0, r.height], ['Right', r.right - b0.left, y, 0, r.height]].forEach(function (sd, i) {
         var w = parseFloat(cs['border' + sd[0] + 'Width']), st = cs['border' + sd[0] + 'Style']; if (!(w > 0) || st === 'none' || st === 'hidden') return;
@@ -699,15 +778,15 @@
     var cv2 = document.createElement('canvas'); cv2.width = nw; cv2.height = nh; var c3 = cv2.getContext('2d'); c3.fillStyle = '#fff'; c3.fillRect(0, 0, nw, nh); c3.drawImage(im, 0, 0);
     return { d: cv2.toDataURL('image/jpeg', 0.92), f: 'JPEG', x: x, y: y, w: w, h: hh };
   }
-  /** Tulis teks ke halaman PDF. invisible=true: lapisan teks tak terlihat di atas gambar halaman. */
-  function drawTexts(pdf, L, y0, y1, P, invisible) {
-    var X0 = 15, Y0 = 12, PX = P.PX;
+  /** Tulis teks ke halaman PDF. invisible=true: lapisan teks tak terlihat di atas gambar halaman. dy: geser ke bawah (px) untuk ruang judul tabel. */
+  function drawTexts(pdf, L, y0, y1, dy, P, invisible) {
+    var X0 = P.M.x, Y0 = P.M.t, PX = P.PX;
     L.texts.forEach(function (t) {
       if (t.t < y0 - 0.5 || t.t >= y1 - 0.5) return;
       var str = pdfSafe(t.s); if (!str.trim()) return;
       pdf.setFont(t.fam, t.bold && t.ital ? 'bolditalic' : t.bold ? 'bold' : t.ital ? 'italic' : 'normal'); pdf.setFontSize(t.fs * 0.75);
       if (!invisible) pdf.setTextColor(t.col[0], t.col[1], t.col[2]);
-      var base = Y0 + (t.b - t.t > 0 ? (t.b - t.desc * t.fs - y0) : 0) / PX, tgt = (t.r - t.l) / PX, nat = pdf.getTextWidth(str), extra = tgt - nat;
+      var base = Y0 + (t.b - t.desc * t.fs - y0 + dy) / PX, tgt = (t.r - t.l) / PX, nat = pdf.getTextWidth(str), extra = tgt - nat;
       var opt = invisible ? { renderingMode: 'invisible' } : {};
       var stretched = t.just && t.words.length > 1 && !t.glued && extra > nat * 0.03;
       if (stretched) t.words.forEach(function (w) { pdf.text(pdfSafe(w.s), X0 + w.l / PX, base, opt); });
@@ -715,31 +794,47 @@
       if (t.ul && !invisible) { pdf.setFillColor(t.col[0], t.col[1], t.col[2]); pdf.rect(X0 + t.l / PX, base + t.fs * 0.1 / PX, tgt, Math.max(0.12, t.fs * 0.06 / PX), 'F'); }
     });
   }
+  /** Gambar latar, foto, garis, lalu teks untuk irisan halaman [y0,y1) pada koordinat laporan. */
+  function paintSlice(pdf, L, y0, y1, dy, P) {
+    var X0 = P.M.x, Y0 = P.M.t, PX = P.PX;
+    L.fills.forEach(function (r) {
+      var a = Math.max(r.y, y0), z = Math.min(r.y + r.h, y1); if (z <= a) return;
+      pdf.setFillColor(r.c[0], r.c[1], r.c[2]); pdf.rect(X0 + r.x / PX, Y0 + (a - y0 + dy) / PX, r.w / PX, (z - a) / PX, 'F');
+    });
+    L.imgs.forEach(function (it) {
+      var cy = it.y + it.h / 2; if (cy < y0 || cy >= y1) return; var d = imgData(it); if (!d) return;
+      try { pdf.addImage(d.d, d.f, X0 + d.x / PX, Y0 + (d.y - y0 + dy) / PX, d.w / PX, d.h / PX, undefined, 'FAST'); } catch (e) {}
+    });
+    L.rects.forEach(function (r) {
+      var a = Math.max(r.y, y0), z = Math.min(r.y + r.h, y1); if (z <= a) return;
+      pdf.setFillColor(r.c[0], r.c[1], r.c[2]); pdf.rect(X0 + r.x / PX, Y0 + (a - y0 + dy) / PX, Math.max(r.w, 0.3) / PX, (z - a) / PX, 'F');
+    });
+    drawTexts(pdf, L, y0, y1, dy, P, false);
+  }
   /** mode 'img': foto halaman + teks tak terlihat (tampilan persis layar). mode 'text': PDF teks asli. */
   function makePdfBlob(mode) {
     mode = mode || 'text'; var P;
     return prepPdf().then(function (p) {
       P = p; var jsPDF = window.jspdf.jsPDF, pdf = new jsPDF({ unit: 'mm', format: [Math.min(P.pw, P.ph), Math.max(P.pw, P.ph)], orientation: P.pw > P.ph ? 'landscape' : 'portrait', compress: true });
-      var cuts = P.cuts, PX = P.PX, chain = Promise.resolve(), L = mode === 'text' || true ? collectLayout(P.clone) : null;
+      var cuts = P.cuts, PX = P.PX, M = P.M, R = P.rep, chain = Promise.resolve(), L = collectLayout(P.clone), hdrImg = null;
+      function shot(y, hgt) { return html2canvas(P.clone, { scale: 2, backgroundColor: '#fff', useCORS: true, logging: false, x: 0, y: Math.floor(y), width: P.cwPx, height: Math.ceil(hgt), windowWidth: P.cwPx, scrollX: 0, scrollY: 0 }); }
       for (var i = 0; i < cuts.length - 1; i++) (function (i) {
         chain = chain.then(function () {
-          var y0 = cuts[i], y1 = cuts[i + 1]; status('Membuat PDF… halaman ' + (i + 1) + ' dari ' + (cuts.length - 1), '');
-          if (i > 0) pdf.addPage();
+          var y0 = cuts[i], y1 = cuts[i + 1], rp = !!(R && y0 > R.hBot + 0.5 && y0 < R.tBot - 2), dy = rp ? R.h : 0;
+          status('Membuat PDF… halaman ' + (i + 1) + ' dari ' + (cuts.length - 1), ''); if (i > 0) pdf.addPage();
           if (mode === 'img') {
-            return html2canvas(P.clone, { scale: 2, backgroundColor: '#fff', useCORS: true, logging: false, x: 0, y: Math.floor(y0), width: P.cwPx, height: Math.ceil(y1 - y0), windowWidth: P.cwPx, scrollX: 0, scrollY: 0 }).then(function (cv) {
-              pdf.addImage(cv.toDataURL('image/jpeg', 0.92), 'JPEG', 15, 12, P.cwMm, (y1 - y0) / PX, undefined, 'FAST');
-              drawTexts(pdf, L, y0, y1, P, true);
+            return shot(y0, y1 - y0).then(function (cv) {
+              pdf.addImage(cv.toDataURL('image/jpeg', 0.92), 'JPEG', M.x, M.t + dy / PX, P.cwMm, (y1 - y0) / PX, undefined, 'FAST');
+              drawTexts(pdf, L, y0, y1, dy, P, true);
+              if (!rp) return;
+              return (hdrImg ? Promise.resolve(hdrImg) : shot(R.hTop, R.h).then(function (hc) { return (hdrImg = hc); })).then(function (hc) {
+                pdf.addImage(hc.toDataURL('image/jpeg', 0.92), 'JPEG', M.x, M.t, P.cwMm, R.h / PX, undefined, 'FAST');
+                drawTexts(pdf, L, R.hTop, R.hBot, 0, P, true);
+              });
             });
           }
-          L.imgs.forEach(function (it) {
-            var cy = it.y + it.h / 2; if (cy < y0 || cy >= y1) return; var d = imgData(it); if (!d) return;
-            try { pdf.addImage(d.d, d.f, 15 + d.x / PX, 12 + (d.y - y0) / PX, d.w / PX, d.h / PX, undefined, 'FAST'); } catch (e) {}
-          });
-          L.rects.forEach(function (r) {
-            var a = Math.max(r.y, y0), z = Math.min(r.y + r.h, y1); if (z <= a) return;
-            pdf.setFillColor(r.c[0], r.c[1], r.c[2]); pdf.rect(15 + r.x / PX, 12 + (a - y0) / PX, Math.max(r.w, 0.3) / PX, (z - a) / PX, 'F');
-          });
-          drawTexts(pdf, L, y0, y1, P, false);
+          paintSlice(pdf, L, y0, y1, dy, P);
+          if (rp) paintSlice(pdf, L, R.hTop, R.hBot, 0, P);   // judul kolom di bagian atas halaman lanjutan
         });
       })(i);
       return chain.then(function () { return pdf.output('blob'); });
@@ -757,7 +852,7 @@
         var upd = erhk[kid] && erhk[kpar] === parent ? erhk[kid] : null;
         return multipart({ id: upd, name: name, parent: parent, mime: 'application/pdf', body: blob })
           .catch(function (e) { if (e.status === 404 && upd) return multipart({ name: name, parent: parent, mime: 'application/pdf', body: blob }); throw e; })
-          .then(function (id) { erhk[kid] = id; erhk[kpar] = parent; try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} return id; });
+          .then(function (id) { erhk[kid] = id; erhk[kpar] = parent; cacheState(); return id; });
       }).then(function (id) {
         status('PDF terunggah ✓ ' + name, 'ok');
         var mod = modal([h('h2', {}, 'PDF tersimpan di Drive'), h('p', { class: 's' }, name + ' (' + Math.round(blob.size / 1024) + ' KB). Unggah ulang pada laporan yang sama akan memperbarui berkas ini, bukan membuat salinan baru.'),
@@ -803,14 +898,18 @@
   /* ---------- kait ke v17 ---------- */
   function hook() {
     var origSave = window.save;
-    window.save = function () { origSave.apply(this, arguments); onSave(); };
+    window.save = function () { var r = origSave.apply(this, arguments); onSave(); return r; };
     var origRender = window.render;
     window.render = function () { origRender.apply(this, arguments); syncDestSel(); };
     var origWord = window.buildWord;
-    window.buildWord = function () { var html = origWord.apply(this, arguments); try { return fixWordGallery(html); } catch (e) { return html; } };
+    if (KIND === 'rhk') window.buildWord = function () { var html = origWord.apply(this, arguments); try { return fixWordGallery(html); } catch (e) { return html; } };
     window.addEventListener('afterprint', function () { if (E.session && E.driveOn) say('Mau PDF langsung masuk Drive tanpa unduh? Pakai tombol "📤 PDF teks → Drive" di bilah atas.'); });
     /* Blok tanda tangan: blok tetap di kanan, isinya (tanggal, nama, NIP) rata tengah atau rata kiri.
        Nilai lama (r/c/l) tetap dipakai apa adanya. Laporan lama yang masih "r" (bawaan) dipindah ke "rc" sekali saja. */
+    if (KIND === 'harian') {   // laporan harian: perataan tanda tangan sudah ada di templatnya sendiri
+      window.addEventListener('beforeunload', function () { if (E.dirty && E.session) { try { save(); } catch (e) {} } });
+      return;
+    }
     var sel = $e('ttdAl');
     if (sel) { sel.innerHTML = ''; [['rl', 'Blok di kanan · nama & NIP sejajar kiri (disarankan)'], ['rc', 'Blok di kanan · nama & NIP rata tengah'], ['r', 'Rata kanan (bawaan lama)'], ['c', 'Blok di tengah'], ['l', 'Blok di kiri']].forEach(function (o) { sel.appendChild(h('option', { value: o[0] }, o[1])); }); }
     var origTtd = window.ttdHTML;
@@ -834,7 +933,7 @@
     window.addEventListener('beforeunload', function () { if (E.dirty && E.session) { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} } });
   }
   function boot() {
-    hook(); setFavicon(); renderBar();
+    hook(); setFavicon(); renderBar(); if (KIND === 'harian') document.title = document.title.replace(/^(?!EasyRHK)/, 'EasyRHK · ');
     var saved = null; try { saved = JSON.parse(lsGet('easyrhk_session') || 'null'); } catch (e) {}
     if (CFG.API_URL && saved && saved.token) {
       E.session = saved;
