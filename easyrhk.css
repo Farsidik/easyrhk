@@ -100,21 +100,28 @@
 .hide-allctl .tin [data-p="ttd.pre"]:empty{min-height:0}
 @media print{.tin [data-p="ttd.pre"]:empty{min-height:0}}
 
-/* Pilihan jenis laporan setelah masuk */
-#erhkChoose{position:fixed;inset:0;z-index:9998;display:flex;align-items:center;justify-content:center;padding:12px;overflow:auto;font-family:Arial,sans-serif;background:linear-gradient(135deg,rgba(18,48,111,.92),rgba(8,145,178,.88))}
+/* Beranda portal setelah masuk */
+#erhkChoose.portal{position:fixed;inset:0;z-index:9998;display:flex;flex-direction:column;overflow:auto;font-family:Arial,sans-serif;color:#fff;
+ background:radial-gradient(circle at 18% 22%,rgba(34,211,238,.28),transparent 42%),radial-gradient(circle at 85% 80%,rgba(251,146,60,.18),transparent 40%),linear-gradient(135deg,#12306f 0%,#1d4ea0 55%,#0b7ea3 100%)}
+#erhkChoose.portal::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.35;background-image:radial-gradient(rgba(255,255,255,.55) 1.4px,transparent 1.6px);background-size:16px 16px;-webkit-mask-image:radial-gradient(ellipse at 50% 55%,#000 0%,transparent 70%);mask-image:radial-gradient(ellipse at 50% 55%,#000 0%,transparent 70%)}
 @media print{#erhkChoose{display:none!important}}
-.erhk-card.erhk-choose{width:min(820px,100%);padding:26px 26px 22px;border-radius:18px}
-.erhk-chead{display:flex;gap:12px;align-items:center;margin-bottom:14px}
-.erhk-chead h2{font-size:21px}
-.erhk-kinds{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.erhk-card button.erhk-kind{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:6px;text-align:left;background:#fff;color:#12306f;border:2px solid #dbe4f3;border-radius:16px;padding:20px 18px 16px;cursor:pointer;transition:border-color .15s,box-shadow .15s,transform .15s;font-weight:400}
-.erhk-card button.erhk-kind:hover,.erhk-card button.erhk-kind:focus-visible{border-color:#0891b2;box-shadow:0 8px 24px rgba(8,145,178,.18);transform:translateY(-2px);outline:none}
-.erhk-card button.erhk-kind.last{border-color:#fb923c}
-.erhk-kind .ic{font-size:34px;line-height:1}
-.erhk-kind b{font-size:18px;color:#12306f}
-.erhk-kind small{font-size:12.5px;color:#475569;line-height:1.4}
-.erhk-kind ul{margin:4px 0 6px;padding-left:18px;font-size:12px;color:#334155;line-height:1.5}
-.erhk-kind em{margin-top:auto;font-style:normal;font-weight:700;font-size:13px;color:#ea580c}
-.erhk-kind .tag{position:absolute;top:10px;right:10px;font-style:normal;font-size:10.5px;font-weight:700;background:#fff7ed;color:#c2410c;border:1px solid #fdba74;border-radius:20px;padding:2px 8px}
-@media (max-width:640px){.erhk-kinds{grid-template-columns:1fr}}
+.portal .ptop{position:relative;display:flex;justify-content:space-between;align-items:center;gap:10px;padding:18px 26px;flex-wrap:wrap}
+.portal .hi{font-weight:700;font-size:15px;letter-spacing:.2px;color:rgba(255,255,255,.88)}
+.portal .pbtns{display:flex;gap:8px}
+.portal .pbtns button{background:rgba(255,255,255,.14);color:#fff;border:1px solid rgba(255,255,255,.35);border-radius:10px;padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer}
+.portal .pbtns button:hover{background:rgba(255,255,255,.26)}
+.portal .pmid{position:relative;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:8px 20px 30px}
+.portal .plogo{width:132px;height:132px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 10px 34px rgba(0,0,0,.28);margin-bottom:14px}
+.portal h1{margin:0;font-size:22px;font-weight:700}
+.portal .pmid>p{margin:6px 0 28px;color:rgba(255,255,255,.8);font-size:14px}
+.portal .ptiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,170px));gap:18px;justify-content:center;width:min(1100px,100%)}
+.portal .pt{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;height:160px;background:#fff;border:0;border-radius:14px;cursor:pointer;color:#0e7490;box-shadow:0 6px 20px rgba(0,0,0,.2);transition:transform .15s,box-shadow .15s;font-family:inherit}
+.portal .pt:hover,.portal .pt:focus-visible{transform:translateY(-4px);box-shadow:0 14px 30px rgba(0,0,0,.32);outline:none}
+.portal .pt .ic{width:84px;height:84px;border-radius:18px;background:#e0f2fe;color:#12306f;display:flex;align-items:center;justify-content:center}
+.portal .pt:nth-child(2) .ic{background:#ffedd5;color:#c2410c}
+.portal .pt .lb{font-size:14px;font-weight:700;color:#0e7490;padding:0 6px}
+.portal .pt .tag{position:absolute;top:8px;right:8px;font-style:normal;font-size:10px;font-weight:700;background:#fff7ed;color:#c2410c;border:1px solid #fdba74;border-radius:20px;padding:2px 7px}
+.portal .pt.last{box-shadow:0 0 0 3px #fb923c,0 6px 20px rgba(0,0,0,.2)}
+.portal small{margin-top:34px;color:rgba(255,255,255,.65);font-size:12px}
+@media (max-width:640px){.portal .ptiles{grid-template-columns:1fr 1fr;gap:12px}.portal .pt{height:140px}.portal .pt .ic{width:68px;height:68px}.portal .plogo{width:104px;height:104px}.portal h1{font-size:18px}}
 #erhkBar .kindtag{background:#1d3f9e;color:#fff;border-radius:20px;padding:2px 10px;font-size:11px;font-weight:700}

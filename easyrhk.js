@@ -363,26 +363,49 @@
   function kindOf(r) { return r && r.rhk === 'HARIAN' ? 'harian' : 'rhk'; }
   var KIND_PAGE = { rhk: 'index.html', harian: 'harian.html' };
   var KIND_NAME = { rhk: 'Laporan RHK', harian: 'Laporan Harian' };
-  /** Pilihan jenis laporan setelah masuk. */
+  /** Beranda setelah masuk: layar penuh bergaya portal layanan, kartu besar untuk tiap menu. */
+  function displayName() {
+    var n = (S && S.ttd && S.ttd.nama) || '';
+    if (!n || /^nama lengkap, gelar$/i.test(n.trim()) || /^nama pelapor/i.test(n.trim())) return 'NIP ' + (E.session ? E.session.user.nip : '');
+    return n.trim().toUpperCase();
+  }
+  var ICONS = {
+    rhk: '<path d="M7 3h7l4 4v14H7z"/><path d="M14 3v4h4"/><path d="M10 12h5M10 15.5h5M10 8.5h2"/>',
+    harian: '<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4M16 3v4M4 10h16"/><path d="M8 14h3M13 14h3M8 17h3"/>',
+    laporan: '<path d="M4 7l8-4 8 4-8 4z"/><path d="M4 12l8 4 8-4"/><path d="M4 17l8 4 8-4"/>',
+    folder: '<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',
+    akun: '<circle cx="12" cy="8" r="4"/><path d="M4 21c1-4.5 4-6.5 8-6.5s7 2 8 6.5"/>',
+    admin: '<path d="M12 3l8 3v6c0 4.5-3.2 8-8 9-4.8-1-8-4.5-8-9V6z"/><path d="M9 12l2 2 4-4"/>'
+  };
+  function svgIcon(k) { var sp = h('span', { class: 'ic' }); sp.innerHTML = '<svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">' + ICONS[k] + '</svg>'; return sp; }
   function chooseKind() {
     var old = $e('erhkChoose'); if (old) old.remove();
     var last = lsGet('easyrhk_kind') || KIND;
+    function close() { var c = $e('erhkChoose'); if (c) c.remove(); }
     function pick(k) {
       lsSet('easyrhk_kind', k); ssSet('easyrhk_kind_ok', '1');
-      if (k === KIND) { var c = $e('erhkChoose'); if (c) c.remove(); return; }
+      if (k === KIND) { close(); return; }
       if (E.dirty && E.session) syncNow().then(function () { location.href = KIND_PAGE[k]; }); else location.href = KIND_PAGE[k];
     }
-    function card(k, ic, t, d, pts) {
-      return h('button', { type: 'button', class: 'erhk-kind' + (last === k ? ' last' : ''), onclick: function () { pick(k); } },
-        h('span', { class: 'ic' }, ic), h('b', {}, t), h('small', {}, d), h('ul', {}, pts.map(function (x) { return h('li', {}, x); })),
-        h('em', {}, k === KIND ? 'Lanjut di halaman ini →' : 'Buka →'), last === k ? h('i', { class: 'tag' }, 'Terakhir dipakai') : null);
-    }
-    var cover = h('div', { id: 'erhkChoose', class: 'erhk-cover' }, h('div', { class: 'erhk-card erhk-choose' },
-      h('div', { class: 'erhk-chead' }, logo(40, 'ch'), h('div', {}, h('h2', {}, 'Mau mengerjakan laporan apa?'), h('p', { class: 's' }, E.session ? 'Masuk sebagai NIP ' + E.session.user.nip + '. Jenis laporan bisa diganti kapan saja lewat tombol di bilah atas.' : 'Jenis laporan bisa diganti kapan saja lewat tombol di bilah atas.'))),
-      h('div', { class: 'erhk-kinds' },
-        card('rhk', '📝', 'Laporan RHK', 'Satu laporan per kegiatan/RHK Wali Asuh atau Wali Asrama.', ['Narasi per RHK dan shift sudah disiapkan', 'Lampiran tabel dan dokumentasi foto', 'PDF/Word langsung ke Drive']),
-        card('harian', '📅', 'Laporan Harian', 'Laporan kegiatan harian dalam satu bulan.', ['Tabel tanggal, kegiatan, rincian, dan foto', 'Satu bulan penuh, tanda tangan + Kepala Sekolah', 'PDF/Word langsung ke Drive']))));
-    cover.addEventListener('keydown', function (ev) { if (ev.key === 'Escape') cover.remove(); });
+    function tile(ic, label, fn, tag) { return h('button', { type: 'button', class: 'pt' + (tag ? ' last' : ''), onclick: fn }, svgIcon(ic), h('span', { class: 'lb' }, label), tag ? h('i', { class: 'tag' }, tag) : null); }
+    var tiles = [
+      tile('rhk', 'Laporan RHK', function () { pick('rhk'); }, last === 'rhk' ? 'Terakhir dipakai' : ''),
+      tile('harian', 'Laporan Harian', function () { pick('harian'); }, last === 'harian' ? 'Terakhir dipakai' : ''),
+      tile('laporan', 'Laporan Saya', function () { ssSet('easyrhk_kind_ok', '1'); close(); openReports(); }),
+      tile('folder', 'Folder Drive', function () { ssSet('easyrhk_kind_ok', '1'); close(); openFolders(); }),
+      tile('akun', 'Akun Saya', function () { ssSet('easyrhk_kind_ok', '1'); close(); openAccount(); })
+    ];
+    if (E.session && E.session.user.isAdmin) tiles.push(tile('admin', 'Admin', function () { ssSet('easyrhk_kind_ok', '1'); close(); openAdmin(); }));
+    var cover = h('div', { id: 'erhkChoose', class: 'portal' },
+      h('div', { class: 'ptop' }, h('span', { class: 'hi' }, 'Selamat Datang, ' + displayName()),
+        h('span', { class: 'pbtns' }, h('button', { type: 'button', onclick: function () { ssSet('easyrhk_kind_ok', '1'); close(); }, title: 'Tutup beranda dan lanjut mengerjakan' }, '✕ Tutup'), h('button', { type: 'button', onclick: logout }, '⎋ Keluar'))),
+      h('div', { class: 'pmid' },
+        h('div', { class: 'plogo' }, logo(86, 'pl')),
+        h('h1', {}, 'Layanan Laporan Wali Asuh & Wali Asrama'),
+        h('p', {}, 'Pilih jenis laporan yang ingin dikerjakan'),
+        h('div', { class: 'ptiles' }, tiles),
+        h('small', {}, 'EasyRHK · Sekolah Rakyat Terintegrasi 1 Cilacap')));
+    cover.addEventListener('keydown', function (ev) { if (ev.key === 'Escape') close(); });
     document.body.appendChild(cover);
   }
 
