@@ -355,7 +355,7 @@
       status('Masuk sebagai NIP ' + E.session.user.nip, '');
       if (lsGet(uk('drive')) === '1') getToken(false).then(function () { status('Drive terhubung ✓', 'ok'); }, function () { status('Klik "Hubungkan Drive" untuk sinkron', 'warn'); });
       else status('Klik "Hubungkan Drive" agar laporan & foto tersimpan di Drive Anda', 'warn');
-      api('me').then(function (d) { E.settings = d.settings || {}; });
+      api('me').then(function (d) { E.settings = d.settings || {}; E.aiShared = !!d.aiShared; });
       if (pend && pend.reportId && kindOf(pend) === KIND) { ssSet('easyrhk_kind_ok', '1'); openReport(pend, null, null, true); }
       else if (fresh || !ssGet('easyrhk_kind_ok')) chooseKind();
     });
@@ -544,7 +544,7 @@
       h('h3', {}, 'Ganti password')].concat(field('Password lama', 'password', 'c_old', ''), field('Password baru', 'password', 'c_new', ''),
       [h('div', { class: 'row' }, btn('Ganti password', '', function () {
         return api('changePassword', { oldPassword: val('c_old'), newPassword: val('c_new') }).then(function (d) { showMsg(m, d.message, true); }, function (e) { showMsg(m, e.message, false); });
-      })), m]));
+      })), m, h('h3', {}, 'Kunci AI (Gemini) pribadi'), aiKeyBox(null)]));
   }
 
   /* ---------- Admin ---------- */
@@ -918,8 +918,73 @@
     return wrapHtml();
   }
 
+  /* ---------- AI langsung di dalam halaman (tanpa pindah tab) ---------- */
+  var GEM = 'https://generativelanguage.googleapis.com/v1beta/models/';
+  function gemKey() { return lsGet(uk('gemkey')) || ''; }
+  function gemModel() { return lsGet(uk('gemmodel')) || 'gemini-flash-latest'; }
+  /** Menjalankan "Buat prompt AI" bawaan template tetapi menangkap isi prompt-nya, tanpa membuka ChatGPT. */
+  function capturePrompt() {
+    var got = null, oo = window.open, oe = document.execCommand, cb = navigator.clipboard, own = false;
+    window.open = function () { return null; };
+    document.execCommand = function (c) { if (c === 'copy' && document.activeElement && document.activeElement.tagName === 'TEXTAREA') got = document.activeElement.value; return false; };
+    if (cb) { try { cb.writeText = function (t) { if (got == null) got = t; return new Promise(function () {}); }; own = true; } catch (e) {} }
+    try { window.buatPromptAI(); } finally { window.open = oo; document.execCommand = oe; if (cb && own) { try { delete cb.writeText; } catch (e) {} } var t = $e('toast'); if (t) t.style.display = 'none'; }
+    return got;
+  }
+  function geminiDirect(prompt) {
+    return fetch(GEM + encodeURIComponent(gemModel()) + ':generateContent', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-goog-api-key': gemKey() },
+      body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { responseMimeType: 'application/json', temperature: 0.6 } }) })
+      .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { return { st: r.status, j: j }; }); }, function () { throw { message: 'Tidak dapat menghubungi layanan AI. Periksa koneksi internet.' }; })
+      .then(function (x) {
+        if (x.st === 429) throw { message: 'Kuota gratis kunci Gemini Anda sedang penuh. Tunggu beberapa menit lalu coba lagi.' };
+        if (x.st === 400 || x.st === 401 || x.st === 403) throw { message: 'Kunci Gemini ditolak Google. Periksa kunci di menu Akun saya (atau buat kunci baru).' };
+        if (x.st === 404) throw { message: 'Model AI "' + gemModel() + '" tidak ditemukan. Kosongkan kolom model di menu Akun saya.' };
+        if (x.st >= 400) throw { message: 'Layanan AI sedang bermasalah (kode ' + x.st + '). Coba lagi nanti.' };
+        var text = ''; try { text = x.j.candidates[0].content.parts.map(function (q) { return q.text || ''; }).join(''); } catch (e) {}
+        if (!text.trim()) throw { message: 'AI tidak mengembalikan hasil. Coba ubah teks kegiatan lalu ulangi.' };
+        return text;
+      });
+  }
+  /** Kotak isian kunci Gemini pribadi (dipakai di menu Akun dan di jendela pengantar AI). */
+  function aiKeyBox(after) {
+    var m = msgBox(), inp = h('input', { id: 'ai_key', type: 'password', placeholder: 'Tempel kunci dari Google AI Studio', autocomplete: 'off' }), md = h('input', { id: 'ai_model', type: 'text', placeholder: 'Model (boleh dikosongkan)', value: lsGet(uk('gemmodel')) || '' });
+    if (gemKey()) inp.value = '••••••••••••••••';
+    var box = h('div', {},
+      h('p', { class: 's' }, 'Dengan kunci ini, tombol "Buat dengan AI" bekerja langsung di halaman dan memakai kuota gratis Google milik Anda sendiri. Kunci hanya disimpan di browser ini, tidak dikirim ke server EasyRHK.'),
+      h('p', { class: 's' }, '1) Buka ', h('a', { href: 'https://aistudio.google.com/apikey', target: '_blank', rel: 'noopener' }, 'aistudio.google.com/apikey'), ' dan masuk dengan akun Google. 2) Klik "Create API key". 3) Salin kuncinya, tempel di bawah.'),
+      inp, md, h('div', { class: 'row' },
+        btn('Simpan kunci', '', function () {
+          var v = inp.value.trim(); if (!v || /^•+$/.test(v)) { showMsg(m, gemKey() ? 'Kunci sudah tersimpan.' : 'Tempel kuncinya dulu.', !!gemKey()); return Promise.resolve(); }
+          if (!/^[A-Za-z0-9_\-]{20,80}$/.test(v)) { showMsg(m, 'Bentuk kunci tidak dikenali. Salin ulang seluruh kunci dari AI Studio.', false); return Promise.resolve(); }
+          lsSet(uk('gemkey'), v); lsSet(uk('gemmodel'), md.value.trim()); inp.value = '••••••••••••••••'; showMsg(m, 'Kunci tersimpan di browser ini ✓', true);
+          if (after) after(); return Promise.resolve();
+        }),
+        btn('Hapus kunci', 'g', function () { lsDel(uk('gemkey')); inp.value = ''; showMsg(m, 'Kunci dihapus dari browser ini.', true); return Promise.resolve(); })), m);
+    return box;
+  }
+  function aiIntro() {
+    var mod = modal([h('button', { class: 'erhk-x', onclick: function () { mod.remove(); } }, '×'), h('h2', {}, 'Aktifkan AI langsung'),
+      h('p', { class: 's' }, E.aiShared === false || !E.session ? 'Fitur ini perlu kunci Gemini gratis milik Anda.' : 'Pengelola belum mengaktifkan AI bersama, jadi pakai kunci Gemini gratis milik Anda.'),
+      aiKeyBox(function () { mod.remove(); aiLangsung(); })]);
+  }
+  function aiLangsung() {
+    var useOwn = !!gemKey(), useShared = !useOwn && !!E.aiShared && !!E.session && !E.local;
+    if (!useOwn && !useShared) { aiIntro(); return; }
+    var prompt = capturePrompt(); if (!prompt) return;   // template sudah menampilkan peringatan bila kegiatan kosong
+    var b = $e('erhkAiBtn'), old = b ? b.textContent : ''; if (b) { b.disabled = true; b.textContent = '⏳ AI sedang menyusun…'; }
+    status('AI sedang menyusun…', '');
+    (useOwn ? geminiDirect(prompt) : api('aiGenerate', { prompt: prompt }).then(function (d) { return d.text; })).then(function (text) {
+      $e('aiHasil').value = text; status('', ''); window.terapkanAI();
+    }, function (e) { status('', ''); alert((e && e.message) || 'AI gagal. Coba lagi.'); }).then(function () { if (b) { b.disabled = false; b.textContent = old; } });
+  }
+
   /* ---------- kait ke v17 ---------- */
   function hook() {
+    var bp = document.querySelector('#bar button[onclick*="buatPromptAI"]');
+    if (bp && bp.parentNode) {
+      bp.parentNode.insertBefore(h('button', { class: 'b', id: 'erhkAiBtn', type: 'button', onclick: aiLangsung, title: 'AI menyusun isi langsung di halaman ini, tanpa pindah ke ChatGPT' }, '⚡ Buat dengan AI'), bp);
+      bp.textContent = 'Salin prompt (ChatGPT)'; bp.className = 'b s';
+    }
     var origSave = window.save;
     window.save = function () { var r = origSave.apply(this, arguments); onSave(); return r; };
     var origRender = window.render;
