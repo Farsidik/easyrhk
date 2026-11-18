@@ -937,7 +937,8 @@
       .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { return { st: r.status, j: j }; }); }, function () { throw { message: 'Tidak dapat menghubungi layanan AI. Periksa koneksi internet.' }; })
       .then(function (x) {
         if (x.st === 429) throw { message: 'Kuota gratis kunci Gemini Anda sedang penuh. Tunggu beberapa menit lalu coba lagi.' };
-        if (x.st === 400 || x.st === 401 || x.st === 403) throw { message: 'Kunci Gemini ditolak Google. Periksa kunci di menu Akun saya (atau buat kunci baru).' };
+        var why = ''; try { why = String(x.j.error.message || '').replace(/AIza[0-9A-Za-z_\-]+/g, '***').slice(0, 160); } catch (e) {}
+        if (x.st === 400 || x.st === 401 || x.st === 403) throw { message: 'Kunci Gemini ditolak Google' + (why ? ' (' + why + ')' : '') + '. Periksa kunci di menu Akun saya, atau buat kunci baru di AI Studio.' };
         if (x.st === 404) throw { message: 'Model AI "' + gemModel() + '" tidak ditemukan. Kosongkan kolom model di menu Akun saya.' };
         if (x.st >= 400) throw { message: 'Layanan AI sedang bermasalah (kode ' + x.st + '). Coba lagi nanti.' };
         var text = ''; try { text = x.j.candidates[0].content.parts.map(function (q) { return q.text || ''; }).join(''); } catch (e) {}
